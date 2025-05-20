@@ -8,18 +8,20 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Upload, Loader2 } from "lucide-react"
+import { Upload, Loader2, CalendarIcon, MapPin, ImageIcon, Tag, Ticket, Clock, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { toast } from "react-toastify"
 import { createClient } from "@supabase/supabase-js"
-import { Clock, MapPin } from "lucide-react"
 import { TicketManagerClient } from "@/contracts/TicketManagerClient"
 import { AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 // Initialize Supabase client
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+// Google Maps API Key
+const GOOGLE_MAPS_API_KEY = "AIzaSyACn5LbHpFrDZrJ9pkg1OLc4EkntvcmNsA"
 
 interface EventMetadata {
   name: string
@@ -43,6 +45,7 @@ function sliceIntoChunks(arr: any[], chunkSize: number) {
   }
   return res
 }
+
 export default function CreateEventPage() {
   const { activeAddress, algodClient, transactionSigner } = useWallet()
   const [ipfsHash, setIpfsHash] = useState<string | null>(null)
@@ -64,6 +67,10 @@ export default function CreateEventPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>("/placeholder.svg")
   const [isUploading, setIsUploading] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
+  const [currentStep, setCurrentStep] = useState(1)
+
   const handleImageUpload = async (file: File) => {
     try {
       setIsUploading(true)
@@ -98,6 +105,24 @@ export default function CreateEventPage() {
     } finally {
       setIsUploading(false)
     }
+  }
+
+  const handleLocationSearch = () => {
+    if (searchValue) {
+      setFormData({
+        ...formData,
+        location: searchValue,
+        eventMetadata: {
+          ...formData.eventMetadata,
+          venue: searchValue,
+        },
+      })
+      setMapOpen(false)
+    }
+  }
+
+  const getMapEmbedUrl = (location: string) => {
+    return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(location)}`
   }
 
   const createTicketNFTs = async () => {
@@ -185,197 +210,475 @@ export default function CreateEventPage() {
     }
   }
 
+  const nextStep = () => {
+    if (currentStep === 1 && !formData.name) {
+      toast.error("Please enter an event name")
+      return
+    }
+    if (currentStep === 2 && !date) {
+      toast.error("Please select an event date")
+      return
+    }
+    if (currentStep === 3 && !formData.location) {
+      toast.error("Please select a location")
+      return
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, 4))
+  }
+
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1))
+  }
+
   return (
-    <div className="min-h-screen p-6 bg-gray-900">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="grid md:grid-cols-[300px,1fr] gap-6">
-          {/* Image Upload Section */}
-          <Card className="bg-gray-800/50 border-dashed border-2 border-gray-700 aspect-square relative group">
-            <CardContent className="p-0 h-full">
-              <label className="w-full h-full flex flex-col items-center justify-center p-6 cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleImageUpload(file)
-                  }}
-                  disabled={isUploading}
-                />
-                <div className="relative w-full h-full">
-                  {isUploading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                  ) : imagePreview ? (
-                    <div className="relative w-full h-full">
-                      <img
-                        src={imagePreview || "/placeholder.svg"}
-                        alt="Event cover"
-                        className="w-full h-full object-cover rounded-lg"
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-900 to-gray-800 py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+            Create Your Event
+          </h1>
+          <p className="text-gray-400 mt-2">Fill in the details below to create your event on the blockchain</p>
+        </div>
+
+        {/* Progress Steps */}
+        <div className="mb-10">
+          <div className="flex justify-between items-center max-w-3xl mx-auto">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex flex-col items-center">
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition-all",
+                    currentStep === step
+                      ? "bg-purple-600 text-white"
+                      : currentStep > step
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-800 text-gray-400",
+                  )}
+                >
+                  {currentStep > step ? "✓" : step}
+                </div>
+                <span className={cn("text-xs mt-2", currentStep >= step ? "text-white" : "text-gray-500")}>
+                  {step === 1 ? "Basics" : step === 2 ? "Date & Time" : step === 3 ? "Location" : "Details"}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="w-full bg-gray-800 h-1 mt-4 rounded-full max-w-3xl mx-auto">
+            <div
+              className="bg-gradient-to-r from-purple-400 to-pink-600 h-1 rounded-full transition-all"
+              style={{ width: `${(currentStep / 4) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <Card className="bg-gray-800/50 border-gray-700 backdrop-blur-sm">
+          <CardContent className="p-6">
+            {/* Step 1: Basic Info */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-[1fr,300px] gap-6">
+                  <div className="space-y-6">
+                    <div>
+                      <Label className="text-sm text-gray-400 mb-2 block">Event Name</Label>
+                      <Input
+                        placeholder="Give your event a catchy name"
+                        className="text-2xl h-14 bg-gray-900/50 border-gray-700 focus:border-purple-500"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Upload className="h-8 w-8" />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm text-gray-400 mb-2 block">Description</Label>
+                      <Textarea
+                        placeholder="Describe your event in detail..."
+                        className="min-h-[150px] bg-gray-900/50 border-gray-700 focus:border-purple-500"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-sm text-gray-400 mb-2 block">Event Category</Label>
+                      <Select
+                        value={formData.eventMetadata.category}
+                        onValueChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            eventMetadata: { ...formData.eventMetadata, category: value },
+                          })
+                        }
+                      >
+                        <SelectTrigger className="bg-gray-900/50 border-gray-700 focus:border-purple-500">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ai">AI</SelectItem>
+                          <SelectItem value="arts">Arts & Culture</SelectItem>
+                          <SelectItem value="climate">Climate</SelectItem>
+                          <SelectItem value="fitness">Fitness</SelectItem>
+                          <SelectItem value="wellness">Wellness</SelectItem>
+                          <SelectItem value="crypto">Crypto</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm text-gray-400 mb-2 block">Event Image</Label>
+                    <Card className="bg-gray-900/50 border-dashed border-2 border-gray-700 aspect-square relative group overflow-hidden">
+                      <CardContent className="p-0 h-full">
+                        <label className="w-full h-full flex flex-col items-center justify-center p-6 cursor-pointer">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleImageUpload(file)
+                            }}
+                            disabled={isUploading}
+                          />
+                          <div className="relative w-full h-full">
+                            {isUploading ? (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+                              </div>
+                            ) : imagePreview ? (
+                              <div className="relative w-full h-full">
+                                <img
+                                  src={imagePreview || "/placeholder.svg"}
+                                  alt="Event cover"
+                                  className="w-full h-full object-cover rounded-lg"
+                                />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <Upload className="h-8 w-8 text-white" />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center">
+                                <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-500" />
+                                <p className="text-sm text-gray-400">Upload event image</p>
+                                <p className="text-xs text-gray-500 mt-2">Recommended size: 1200x630px</p>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                      </CardContent>
+                    </Card>
+                    {ipfsHash && <div className="mt-2 text-xs text-green-500">✓ Image uploaded to IPFS</div>}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Date & Time */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-sm text-gray-400 mb-2 block">Event Date</Label>
+                    <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        className="mx-auto"
+                        disabled={(date) => date < new Date()}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div>
+                      <Label className="text-sm text-gray-400 mb-2 block">Selected Date</Label>
+                      <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 flex items-center">
+                        <CalendarIcon className="h-5 w-5 mr-3 text-purple-500" />
+                        <span className="text-lg">
+                          {date
+                            ? date.toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })
+                            : "No date selected"}
+                        </span>
                       </div>
                     </div>
+
+                    <div className="bg-purple-900/20 border border-purple-700/30 rounded-lg p-4">
+                      <h3 className="font-medium text-purple-400 flex items-center">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Event Duration
+                      </h3>
+                      <p className="text-sm text-gray-400 mt-2">
+                        By default, your event will be scheduled for 24 hours from the selected date. You can modify the
+                        duration after creation.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Location */}
+            {currentStep === 3 && (
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-sm text-gray-400 mb-2 block">Event Location</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter location or select on map"
+                      className="bg-gray-900/50 border-gray-700 focus:border-purple-500 flex-1"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    />
+                    <Button
+                      variant="outline"
+                      className="bg-gray-900/50 border-gray-700 hover:bg-purple-900/20 hover:text-purple-400"
+                      onClick={() => setMapOpen(true)}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Pick on Map
+                    </Button>
+                  </div>
+                </div>
+
+                {formData.location && (
+                  <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <MapPin className="h-5 w-5 mr-3 text-purple-500 mt-1 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-medium">Selected Location</h3>
+                        <p className="text-sm text-gray-400 mt-1">{formData.location}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden h-[300px]">
+                  {formData.location ? (
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      style={{ border: 0 }}
+                      src={getMapEmbedUrl(formData.location)}
+                      allowFullScreen
+                    ></iframe>
                   ) : (
-                    <div className="text-center">
-                      <Upload className="h-8 w-8 mx-auto mb-2" />
-                      <p className="text-sm text-gray-400">Upload event image</p>
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-400">Enter a location to see it on the map</p>
                     </div>
                   )}
                 </div>
-              </label>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <Input
-              placeholder="Event Name"
-              className="text-3xl h-16 bg-transparent border-none placeholder:text-gray-500"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-
-            <div className="grid gap-4">
-              <div className="flex items-center space-x-4">
-                <div className="space-y-2 flex-1">
-                  <Label>Event Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal bg-gray-800/50",
-                          !date && "text-muted-foreground",
-                        )}
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        {date ? date.toLocaleDateString() : "Select date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                </div>
               </div>
+            )}
 
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Event Location"
-                  className="bg-gray-800/50 flex-1"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                />
-                <Button
-                  variant="outline"
-                  className="bg-gray-800/50"
-                  onClick={() =>
-                    window.open(
-                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formData.location)}`,
-                      "_blank",
-                    )
-                  }
-                >
-                  <MapPin className="h-4 w-4" />
-                </Button>
-              </div>
+            {/* Step 4: Final Details */}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-sm text-gray-400 mb-2 block">Maximum Tickets</Label>
+                    <div className="relative">
+                      <Ticket className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                      <Input
+                        type="number"
+                        placeholder="Number of available tickets"
+                        className="pl-10 bg-gray-900/50 border-gray-700 focus:border-purple-500"
+                        value={formData.maxTickets}
+                        onChange={(e) => setFormData({ ...formData, maxTickets: e.target.value })}
+                      />
+                    </div>
+                  </div>
 
-              <Textarea
-                placeholder="Event Description"
-                className="min-h-[100px] bg-gray-800/50"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <Label>Maximum Tickets</Label>
-                  <Input
-                    type="number"
-                    className="w-32 bg-gray-800/50"
-                    value={formData.maxTickets}
-                    onChange={(e) => setFormData({ ...formData, maxTickets: e.target.value })}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Label>Ticket Price (ALGO)</Label>
-                    <div className="flex items-center gap-2">
+                  <div>
+                    <Label className="text-sm text-gray-400 mb-2 block">Ticket Price (ALGO)</Label>
+                    <div className="relative">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Ⱥ</div>
+                      <Input
+                        type="number"
+                        placeholder="0.00"
+                        className="pl-10 bg-gray-900/50 border-gray-700 focus:border-purple-500"
+                        value={formData.ticketPrice}
+                        onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value })}
+                        disabled={formData.ticketPrice === "0"}
+                      />
+                    </div>
+                    <div className="flex items-center mt-2">
                       <input
                         type="checkbox"
                         id="freeTicket"
-                        className="rounded border-gray-700 bg-gray-800/50"
+                        className="rounded border-gray-700 bg-gray-800/50 text-purple-600 focus:ring-purple-500"
                         onChange={(e) => {
                           if (e.target.checked) {
                             setFormData({ ...formData, ticketPrice: "0" })
                           }
                         }}
                       />
-                      <Label htmlFor="freeTicket" className="text-sm text-gray-400">
-                        Free Event
+                      <Label htmlFor="freeTicket" className="text-sm text-gray-400 ml-2">
+                        This is a free event
                       </Label>
                     </div>
                   </div>
-                  <Input
-                    type="number"
-                    className="w-32 bg-gray-800/50"
-                    value={formData.ticketPrice}
-                    onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value })}
-                    disabled={formData.ticketPrice === "0"}
-                  />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <Label>Event Category</Label>
-                  <Select
-                    value={formData.eventMetadata.category}
-                    onValueChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        eventMetadata: { ...formData.eventMetadata, category: value },
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-32 bg-gray-800/50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ai">AI</SelectItem>
-                      <SelectItem value="arts">Arts & Culture</SelectItem>
-                      <SelectItem value="climate">Climate</SelectItem>
-                      <SelectItem value="fitness">Fitness</SelectItem>
-                      <SelectItem value="wellness">Wellness</SelectItem>
-                      <SelectItem value="crypto">Crypto</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-6 mt-6">
+                  <h3 className="text-lg font-medium mb-4">Event Summary</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start">
+                      <Tag className="h-5 w-5 mr-3 text-purple-500 mt-1" />
+                      <div>
+                        <h4 className="text-sm text-gray-400">Event Name</h4>
+                        <p className="font-medium">{formData.name || "Not specified"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start">
+                      <CalendarIcon className="h-5 w-5 mr-3 text-purple-500 mt-1" />
+                      <div>
+                        <h4 className="text-sm text-gray-400">Date</h4>
+                        <p className="font-medium">
+                          {date
+                            ? date.toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })
+                            : "Not specified"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start">
+                      <MapPin className="h-5 w-5 mr-3 text-purple-500 mt-1" />
+                      <div>
+                        <h4 className="text-sm text-gray-400">Location</h4>
+                        <p className="font-medium">{formData.location || "Not specified"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start">
+                      <Ticket className="h-5 w-5 mr-3 text-purple-500 mt-1" />
+                      <div>
+                        <h4 className="text-sm text-gray-400">Tickets</h4>
+                        <p className="font-medium">
+                          {formData.maxTickets ? `${formData.maxTickets} tickets available` : "Not specified"} •
+                          {formData.ticketPrice === "0"
+                            ? " Free"
+                            : formData.ticketPrice
+                              ? ` ${formData.ticketPrice} ALGO`
+                              : " Price not specified"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8">
+              {currentStep > 1 ? (
+                <Button
+                  variant="outline"
+                  onClick={prevStep}
+                  className="bg-gray-900/50 border-gray-700 hover:bg-gray-800"
+                >
+                  Previous
+                </Button>
+              ) : (
+                <div></div>
+              )}
+
+              {currentStep < 4 ? (
+                <Button
+                  onClick={nextStep}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0"
+                >
+                  Continue
+                </Button>
+              ) : (
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0"
+                  onClick={createTicketNFTs}
+                  disabled={isCreating || !activeAddress}
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Event...
+                    </>
+                  ) : (
+                    "Create Event & Mint Tickets"
+                  )}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Map Dialog */}
+      <Dialog open={mapOpen} onOpenChange={setMapOpen}>
+        <DialogContent className="sm:max-w-[600px] bg-gray-800 border-gray-700">
+          <DialogHeader>
+            <DialogTitle>Select Location</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search for a location"
+                className="bg-gray-900/50 border-gray-700"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleLocationSearch()
+                  }
+                }}
+              />
+              <Button variant="outline" onClick={handleLocationSearch}>
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="h-[400px] rounded-md overflow-hidden">
+              {searchValue ? (
+                <iframe
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  style={{ border: 0 }}
+                  src={getMapEmbedUrl(searchValue)}
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gray-900">
+                  <p className="text-gray-400">Search for a location to see it on the map</p>
+                </div>
+              )}
+            </div>
+
+            <div className="text-sm text-gray-400">
+              Enter a location name, address, or landmark in the search box above.
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setMapOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleLocationSearch}>Confirm Location</Button>
             </div>
           </div>
-        </div>
-
-        <div className="flex justify-center gap-4">
-          <Button
-            className="w-full max-w-md bg-primary hover:bg-primary/90"
-            onClick={createTicketNFTs}
-            disabled={isCreating || !activeAddress}
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Tickets...
-              </>
-            ) : (
-              "Create Event & Mint Tickets"
-            )}
-          </Button>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
