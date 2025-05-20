@@ -16,7 +16,7 @@ import { createClient } from "@supabase/supabase-js"
 import { TicketManagerClient } from "@/contracts/TicketManagerClient"
 import { AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { TicketFactory } from "@/contracts/TicketClient"
+import { TicketFactory,TicketClient } from "@/contracts/TicketClient"
 import { OnApplicationComplete } from "algosdk"
 import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount"
 // import { AlgoAmount } from "@algorandfoundation/algokit-utils"
@@ -202,7 +202,11 @@ const client = algorand.client.getTypedAppClientById(TicketManagerClient, {
   defaultSender: activeAddress,
   defaultSigner: transactionSigner
 });
-
+const client2 = algorand.client.getTypedAppClientById(TicketClient, {
+  appId: BigInt(appID),
+  defaultSender: activeAddress,
+  defaultSigner: transactionSigner
+});
       await algorand
   .newGroup()
   .addAppCallMethodCall(await client.params.createEvent({args: {eventConfig : {
@@ -230,7 +234,7 @@ const client = algorand.client.getTypedAppClientById(TicketManagerClient, {
     receiver: appAddress,
     amount: AlgoAmount.Algo(3),
     signer: transactionSigner,
-  })
+  }).addAppCallMethodCall(await client2.params.createTickets({args: {assetUrl: ipfsURL, totalTickets:BigInt(maxParticipants)}}))
 .send({populateAppCallResources: true });     
  toast.success("Event created successfully on the blockchain!")
 

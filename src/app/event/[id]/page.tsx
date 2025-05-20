@@ -28,6 +28,8 @@ import { toast } from "react-toastify"
 import algosdk from "algosdk"
 import { UserDetailsDialog } from "@/components/user-details-dialog"
 import { type QRPayload, generateQRCodeDataURL, signPayload } from "@/lib/qr-utils"
+import { AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client"
+import { TicketClient } from "@/contracts/TicketClient"
 
 // Initialize Supabase client
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -408,6 +410,34 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       // Get transaction parameters
       const suggestedParams = await algodClient.getTransactionParams().do()
 
+      const algorand = AlgorandClient.fromConfig({
+        algodConfig: {
+          server: "https://testnet-api.algonode.cloud",
+          port: "",
+          token: "",
+        },
+        indexerConfig: {
+          server: "https://testnet-api.algonode.cloud",
+          port: "",
+          token: "",
+        },
+      })
+
+      if(!userDetails?.email){
+        throw error;
+      }
+
+      // const client2 = algorand.client.getTypedAppClientById(TicketClient, {
+      //   appId: BigInt(appID),
+      //   defaultSender: activeAddress,
+      //   defaultSigner: transactionSigner
+      // });
+      //       await algorand
+      //   .newGroup()
+      //   .addAssetOptIn({sender: activeAddress, assetId: BigInt(739833494), signer: transactionSigner} )
+      //   .addAppCallMethodCall(await client2.params.registerEvent({args: { email: userDetails?.email}}))
+      //   .send({populateAppCallResources: true });     
+
       // Create the application transaction
       const txn = algosdk.makeApplicationNoOpTxnFromObject({
         sender: activeAddress,
@@ -419,9 +449,15 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         suggestedParams: { ...suggestedParams },
         boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAddress).publicKey }],
       })
-
+      const optInTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+        sender: activeAddress,
+        receiver: activeAddress,
+        assetIndex: BigInt(739833494),
+        amount: 0,
+        suggestedParams,
+      })
       // Sign and send the transaction
-      const signedTxns = await transactionSigner([txn], [0])
+      const signedTxns = await transactionSigner([optInTxn,txn,], [0])
       const { txid } = await algodClient.sendRawTransaction(signedTxns).do()
 
       // Wait for confirmation
