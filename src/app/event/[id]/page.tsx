@@ -25,7 +25,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "react-toastify"
-import { getOrCreateUser } from "@/lib/userCreation"
 import algosdk from "algosdk"
 import { UserDetailsDialog } from "@/components/user-details-dialog"
 import { type QRPayload, generateQRCodeDataURL, signPayload } from "@/lib/qr-utils"
@@ -148,6 +147,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [debugInfo, setDebugInfo] = useState<any>({})
+  // Add userDetails state to store email from dialog
+  const [userDetails, setUserDetails] = useState<{ email: string; firstName: string; lastName: string } | null>(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -360,16 +361,10 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     generateQR()
   }, [requestStatus.status, requestStatus.assetId, event, activeAddress])
 
-  const handleUserDetailsSubmit = async (userDetails: { email: string; firstName: string; lastName: string }) => {
+  // Update the handleUserDetailsSubmit function
+  const handleUserDetailsSubmit = async (details: { email: string; firstName: string; lastName: string }) => {
     try {
-      // Get or create user with the provided details
-      const { user_id: newUserId, error: userError } = await getOrCreateUser(activeAddress!, userDetails)
-
-      if (userError || !newUserId) {
-        throw new Error("Failed to get or create user")
-      }
-
-      setUserId(newUserId)
+      setUserDetails(details)
       setUserDetailsSubmitted(true)
       setShowUserDetailsDialog(false)
 
@@ -381,8 +376,12 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     }
   }
 
+  // Replace the handlePurchaseTicket function with this updated version
   const handlePurchaseTicket = async () => {
-    if (!activeAddress || !event) return
+    if (!activeAddress || !event || !algodClient || !transactionSigner) {
+      toast.error("Please connect your wallet first")
+      return
+    }
 
     try {
       setIsPurchasing(true)
@@ -393,76 +392,51 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         return
       }
 
-      // Get available tickets that haven't been opted into
-      const { data: availableTickets } = await supabase
-        .from("tickets")
-        .select("ticket_id, asset_id")
-        .eq("event_id", resolvedParams.id)
-        .eq("opted_in", false)
-        .limit(1)
+      // Get the app ID from the event
+      const appID = event.app_id || blockchainEvent?.EventAppID
 
-      if (!availableTickets || availableTickets.length === 0) {
-        toast.error("No tickets available for this event")
+      if (!appID) {
+        toast.error("Invalid application ID")
         return
       }
 
-      const assetID = availableTickets[0].asset_id
+      // Define the ABI method for registerEvent
+      const METHODS = [
+        new algosdk.ABIMethod({ name: "registerEvent", desc: "", args: [{ type: "string", name: "email", desc: "" }], returns: { type: "void", desc: "" } }),
+      ]
 
+      // Get transaction parameters
       const suggestedParams = await algodClient.getTransactionParams().do()
-      const optInTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+
+      // Create the application transaction
+      const txn = algosdk.makeApplicationNoOpTxnFromObject({
         sender: activeAddress,
-        receiver: activeAddress,
-        suggestedParams,
-        assetIndex: assetID,
-        amount: 0,
+        appIndex: Number(appID),
+        appArgs: [
+          algosdk.getMethodByName(METHODS, "registerEvent").getSelector(),
+          algosdk.coerceToBytes(userDetails?.email || ""), // User email
+        ],
+        suggestedParams: { ...suggestedParams },
+        boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAddress).publicKey }],
       })
 
-      const signedTxns = await transactionSigner([optInTxn], [0])
+      // Sign and send the transaction
+      const signedTxns = await transactionSigner([txn], [0])
       const { txid } = await algodClient.sendRawTransaction(signedTxns).do()
-      await algosdk.waitForConfirmation(algodClient, txid, 4)
 
-      toast.success("Ticket NFTs Opted IN successfully!")
-      // Create a request for the ticket
-      const { error: requestError } = await supabase.from("requests").insert([
-        {
-          event_id: resolvedParams.id,
-          ticket_id: availableTickets[0].ticket_id,
-          user_id: user_id,
-          wallet_address: activeAddress,
-          asset_id: availableTickets[0].asset_id,
-          request_status: "pending",
-        },
-      ])
-
-      if (requestError) {
-        throw requestError
-      }
-
-      // Update the ticket's opted_in status
-      const { error: updateError } = await supabase
-        .from("tickets")
-        .update({ opted_in: true })
-        .eq("ticket_id", availableTickets[0].ticket_id)
-
-      if (updateError) {
-        // If updating the ticket fails, we should delete the request to maintain consistency
-        await supabase
-          .from("requests")
-          .delete()
-          .eq("ticket_id", availableTickets[0].ticket_id)
-          .eq("wallet_address", activeAddress)
-
-        throw updateError
-      }
+      // Wait for confirmation
+      const result = await algosdk.waitForConfirmation(algodClient, txid, 4)
+      console.log("Transaction confirmed:", result)
 
       // Update local state to reflect the new request
       setRequestStatus({ exists: true, status: "pending" })
       setAvailableTickets((prev) => Math.max(0, prev - 1))
+
       toast.success("Ticket request submitted successfully!")
       router.refresh()
     } catch (error) {
       console.error("Error purchasing ticket:", error)
-      toast.error("Failed to purchase ticket. Please try again.")
+      toast.error(`Failed to purchase ticket: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setIsPurchasing(false)
     }

@@ -25,7 +25,7 @@ import { Address, encodeAddress, modelsv2, OnApplicationComplete, Transaction, T
 import SimulateResponse = modelsv2.SimulateResponse
 import { AlgorandClientInterface } from '@algorandfoundation/algokit-utils/types/algorand-client-interface'
 
-export const APP_SPEC: Arc56Contract = {"name":"Ticket","desc":"","methods":[{"name":"createApplication","args":[{"name":"eventName","type":"string"},{"name":"location","type":"string"},{"name":"startTime","type":"uint64"},{"name":"endTime","type":"uint64"}],"returns":{"type":"void"},"actions":{"create":["NoOp"],"call":[]}},{"name":"createTickets","args":[{"name":"assetUrl","type":"string"},{"name":"totalTickets","type":"uint64"}],"returns":{"type":"void"},"actions":{"create":[],"call":["NoOp"]}},{"name":"registerEvent","args":[],"returns":{"type":"void"},"actions":{"create":[],"call":["NoOp"]}}],"arcs":[4,56],"structs":{},"state":{"schema":{"global":{"bytes":3,"ints":5},"local":{"bytes":0,"ints":0}},"keys":{"global":{"creatorAddress":{"key":"Y3JlYXRvckFkZHJlc3M=","keyType":"AVMBytes","valueType":"address"},"eventName":{"key":"ZXZlbnROYW1l","keyType":"AVMBytes","valueType":"string"},"location":{"key":"bG9jYXRpb24=","keyType":"AVMBytes","valueType":"string"},"startTime":{"key":"c3RhcnRUaW1l","keyType":"AVMBytes","valueType":"uint64"},"endTime":{"key":"ZW5kVGltZQ==","keyType":"AVMBytes","valueType":"uint64"},"registeredCount":{"key":"cmVnaXN0ZXJlZENvdW50","keyType":"AVMBytes","valueType":"uint64"},"assetID":{"key":"YXNzZXRJRA==","keyType":"AVMBytes","valueType":"uint64"},"ticketsRemaining":{"key":"dGlja2V0c1JlbWFpbmluZw==","keyType":"AVMBytes","valueType":"uint64"}},"local":{},"box":{}},"maps":{"global":{},"local":{},"box":{"registeredMap":{"keyType":"address","valueType":"byte[32]"}}}},"bareActions":{"create":[],"call":[]},"sourceInfo":{"approval":{"sourceInfo":[{"teal":1,"source":"contracts\\Ticket.algo.ts:29","pc":[0]},{"teal":2,"source":"contracts\\Ticket.algo.ts:29","pc":[1,2,3,4]},{"teal":3,"source":"contracts\\Ticket.algo.ts:29","pc":[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33]},{"teal":15,"source":"contracts\\Ticket.algo.ts:29","pc":[34,35]},{"teal":16,"source":"contracts\\Ticket.algo.ts:29","pc":[36]},{"teal":17,"source":"contracts\\Ticket.algo.ts:29","pc":[37,38]},{"teal":18,"source":"contracts\\Ticket.algo.ts:29","pc":[39]},{"teal":19,"source":"contracts\\Ticket.algo.ts:29","pc":[40,41]},{"teal":20,"source":"contracts\\Ticket.algo.ts:29","pc":[42]},{"teal":21,"source":"contracts\\Ticket.algo.ts:29","pc":[43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68]},{"teal":25,"source":"contracts\\Ticket.algo.ts:29","errorMessage":"The requested action is not implemented in this contract. Are you using the correct OnComplete? Did you set your app ID?","pc":[69]},{"teal":30,"source":"contracts\\Ticket.algo.ts:44","pc":[70,71,72]},{"teal":31,"source":"contracts\\Ticket.algo.ts:44","pc":[73]},{"teal":34,"source":"contracts\\Ticket.algo.ts:44","pc":[74,75,76]},{"teal":35,"source":"contracts\\Ticket.algo.ts:44","pc":[77]},{"teal":38,"source":"contracts\\Ticket.algo.ts:44","pc":[78,79,80]},{"teal":39,"source":"contracts\\Ticket.algo.ts:44","pc":[81,82,83]},{"teal":42,"source":"contracts\\Ticket.algo.ts:44","pc":[84,85,86]},{"teal":43,"source":"contracts\\Ticket.algo.ts:44","pc":[87,88,89]},{"teal":46,"source":"contracts\\Ticket.algo.ts:44","pc":[90,91,92]},{"teal":47,"source":"contracts\\Ticket.algo.ts:44","pc":[93]},{"teal":48,"source":"contracts\\Ticket.algo.ts:44","pc":[94]},{"teal":52,"source":"contracts\\Ticket.algo.ts:44","pc":[95,96,97]},{"teal":56,"source":"contracts\\Ticket.algo.ts:46","pc":[98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113]},{"teal":57,"source":"contracts\\Ticket.algo.ts:46","pc":[114,115]},{"teal":58,"source":"contracts\\Ticket.algo.ts:46","pc":[116]},{"teal":62,"source":"contracts\\Ticket.algo.ts:47","pc":[117]},{"teal":63,"source":"contracts\\Ticket.algo.ts:47","pc":[118,119]},{"teal":64,"source":"contracts\\Ticket.algo.ts:47","pc":[120]},{"teal":65,"source":"contracts\\Ticket.algo.ts:47","pc":[121]},{"teal":66,"source":"contracts\\Ticket.algo.ts:47","pc":[122]},{"teal":67,"source":"contracts\\Ticket.algo.ts:47","pc":[123,124,125]},{"teal":68,"source":"contracts\\Ticket.algo.ts:47","pc":[126]},{"teal":69,"source":"contracts\\Ticket.algo.ts:47","pc":[127]},{"teal":70,"source":"contracts\\Ticket.algo.ts:47","pc":[128]},{"teal":74,"source":"contracts\\Ticket.algo.ts:48","pc":[129,130,131,132,133,134,135,136,137,138]},{"teal":75,"source":"contracts\\Ticket.algo.ts:48","pc":[139,140]},{"teal":76,"source":"contracts\\Ticket.algo.ts:48","pc":[141]},{"teal":77,"source":"contracts\\Ticket.algo.ts:48","pc":[142]},{"teal":78,"source":"contracts\\Ticket.algo.ts:48","pc":[143]},{"teal":79,"source":"contracts\\Ticket.algo.ts:48","pc":[144,145,146]},{"teal":80,"source":"contracts\\Ticket.algo.ts:48","pc":[147]},{"teal":81,"source":"contracts\\Ticket.algo.ts:48","pc":[148]},{"teal":82,"source":"contracts\\Ticket.algo.ts:48","pc":[149]},{"teal":86,"source":"contracts\\Ticket.algo.ts:49","pc":[150,151,152,153,154,155,156,157,158]},{"teal":87,"source":"contracts\\Ticket.algo.ts:49","pc":[159,160]},{"teal":88,"source":"contracts\\Ticket.algo.ts:49","pc":[161]},{"teal":92,"source":"contracts\\Ticket.algo.ts:50","pc":[162]},{"teal":93,"source":"contracts\\Ticket.algo.ts:50","pc":[163]},{"teal":94,"source":"contracts\\Ticket.algo.ts:50","pc":[164]},{"teal":98,"source":"contracts\\Ticket.algo.ts:51","pc":[165,166,167,168,169,170,171,172,173,174,175]},{"teal":99,"source":"contracts\\Ticket.algo.ts:51","pc":[176,177]},{"teal":100,"source":"contracts\\Ticket.algo.ts:51","pc":[178]},{"teal":101,"source":"contracts\\Ticket.algo.ts:44","pc":[179]},{"teal":106,"source":"contracts\\Ticket.algo.ts:61","pc":[180,181,182]},{"teal":107,"source":"contracts\\Ticket.algo.ts:61","pc":[183]},{"teal":110,"source":"contracts\\Ticket.algo.ts:61","pc":[184,185,186]},{"teal":111,"source":"contracts\\Ticket.algo.ts:61","pc":[187,188,189]},{"teal":114,"source":"contracts\\Ticket.algo.ts:61","pc":[190,191,192]},{"teal":115,"source":"contracts\\Ticket.algo.ts:61","pc":[193]},{"teal":116,"source":"contracts\\Ticket.algo.ts:61","pc":[194]},{"teal":120,"source":"contracts\\Ticket.algo.ts:61","pc":[195,196,197]},{"teal":123,"source":"contracts\\Ticket.algo.ts:61","pc":[198]},{"teal":127,"source":"contracts\\Ticket.algo.ts:63","pc":[199,200]},{"teal":128,"source":"contracts\\Ticket.algo.ts:63","pc":[201,202,203]},{"teal":129,"source":"contracts\\Ticket.algo.ts:63","pc":[204,205]},{"teal":130,"source":"contracts\\Ticket.algo.ts:63","pc":[206]},{"teal":131,"source":"contracts\\Ticket.algo.ts:63","pc":[207]},{"teal":134,"source":"contracts\\Ticket.algo.ts:63","errorMessage":"Only The Event Creator can Mint Tickets","pc":[208]},{"teal":139,"source":"contracts\\Ticket.algo.ts:65","pc":[209,210]},{"teal":140,"source":"contracts\\Ticket.algo.ts:65","pc":[211,212,213]},{"teal":141,"source":"contracts\\Ticket.algo.ts:65","pc":[214]},{"teal":142,"source":"contracts\\Ticket.algo.ts:65","pc":[215,216,217]},{"teal":147,"source":"contracts\\Ticket.algo.ts:66","pc":[218]},{"teal":150,"source":"contracts\\Ticket.algo.ts:66","errorMessage":"The Maximum number of Tickets that can minted are 255","pc":[219]},{"teal":166,"source":"contracts\\Ticket.algo.ts:68","pc":[220]},{"teal":167,"source":"contracts\\Ticket.algo.ts:68","pc":[221,222]},{"teal":168,"source":"contracts\\Ticket.algo.ts:68","pc":[223,224]},{"teal":172,"source":"contracts\\Ticket.algo.ts:69","pc":[225,226]},{"teal":173,"source":"contracts\\Ticket.algo.ts:69","pc":[227,228]},{"teal":177,"source":"contracts\\Ticket.algo.ts:70","pc":[229]},{"teal":178,"source":"contracts\\Ticket.algo.ts:70","pc":[230,231]},{"teal":182,"source":"contracts\\Ticket.algo.ts:71","pc":[232,233,234,235,236,237]},{"teal":183,"source":"contracts\\Ticket.algo.ts:71","pc":[238,239]},{"teal":187,"source":"contracts\\Ticket.algo.ts:72","pc":[240]},{"teal":188,"source":"contracts\\Ticket.algo.ts:72","pc":[241]},{"teal":189,"source":"contracts\\Ticket.algo.ts:72","pc":[242,243,244]},{"teal":190,"source":"contracts\\Ticket.algo.ts:72","pc":[245,246]},{"teal":194,"source":"contracts\\Ticket.algo.ts:73","pc":[247,248]},{"teal":195,"source":"contracts\\Ticket.algo.ts:73","pc":[249,250]},{"teal":199,"source":"contracts\\Ticket.algo.ts:74","pc":[251,252,253]},{"teal":200,"source":"contracts\\Ticket.algo.ts:74","pc":[254,255]},{"teal":203,"source":"contracts\\Ticket.algo.ts:68","pc":[256]},{"teal":204,"source":"contracts\\Ticket.algo.ts:68","pc":[257,258]},{"teal":205,"source":"contracts\\Ticket.algo.ts:68","pc":[259,260]},{"teal":206,"source":"contracts\\Ticket.algo.ts:61","pc":[261]},{"teal":211,"source":"contracts\\Ticket.algo.ts:87","pc":[262,263,264]},{"teal":212,"source":"contracts\\Ticket.algo.ts:87","pc":[265]},{"teal":213,"source":"contracts\\Ticket.algo.ts:87","pc":[266]},{"teal":217,"source":"contracts\\Ticket.algo.ts:87","pc":[267,268,269]},{"teal":221,"source":"contracts\\Ticket.algo.ts:90","pc":[270,271]},{"teal":222,"source":"contracts\\Ticket.algo.ts:90","pc":[272]},{"teal":223,"source":"contracts\\Ticket.algo.ts:90","pc":[273]},{"teal":224,"source":"contracts\\Ticket.algo.ts:90","pc":[274]},{"teal":225,"source":"contracts\\Ticket.algo.ts:90","pc":[275]},{"teal":228,"source":"contracts\\Ticket.algo.ts:90","errorMessage":"already claimed","pc":[276]},{"teal":232,"source":"contracts\\Ticket.algo.ts:91","pc":[277]},{"teal":233,"source":"contracts\\Ticket.algo.ts:91","pc":[278]},{"teal":234,"source":"contracts\\Ticket.algo.ts:91","pc":[279]},{"teal":235,"source":"contracts\\Ticket.algo.ts:91","pc":[280]},{"teal":236,"source":"contracts\\Ticket.algo.ts:91","pc":[281]},{"teal":237,"source":"contracts\\Ticket.algo.ts:91","pc":[282]},{"teal":238,"source":"contracts\\Ticket.algo.ts:91","pc":[283]},{"teal":242,"source":"contracts\\Ticket.algo.ts:92","pc":[284,285]},{"teal":243,"source":"contracts\\Ticket.algo.ts:92","pc":[286,287]},{"teal":244,"source":"contracts\\Ticket.algo.ts:92","pc":[288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321]},{"teal":245,"source":"contracts\\Ticket.algo.ts:92","pc":[322]},{"teal":246,"source":"contracts\\Ticket.algo.ts:92","pc":[323]},{"teal":247,"source":"contracts\\Ticket.algo.ts:92","pc":[324,325,326]},{"teal":248,"source":"contracts\\Ticket.algo.ts:92","pc":[327]},{"teal":249,"source":"contracts\\Ticket.algo.ts:92","pc":[328]},{"teal":250,"source":"contracts\\Ticket.algo.ts:92","pc":[329]},{"teal":251,"source":"contracts\\Ticket.algo.ts:92","pc":[330,331,332]},{"teal":252,"source":"contracts\\Ticket.algo.ts:92","pc":[333]},{"teal":256,"source":"contracts\\Ticket.algo.ts:97","pc":[334,335]},{"teal":257,"source":"contracts\\Ticket.algo.ts:97","pc":[336]},{"teal":258,"source":"contracts\\Ticket.algo.ts:97","pc":[337,338,339]},{"teal":259,"source":"contracts\\Ticket.algo.ts:87","pc":[340]},{"teal":271,"source":"contracts\\Ticket.algo.ts:125","pc":[341,342,343]},{"teal":274,"source":"contracts\\Ticket.algo.ts:125","pc":[344]},{"teal":282,"source":"contracts\\Ticket.algo.ts:126","pc":[345]},{"teal":283,"source":"contracts\\Ticket.algo.ts:126","pc":[346,347]},{"teal":284,"source":"contracts\\Ticket.algo.ts:126","pc":[348,349]},{"teal":288,"source":"contracts\\Ticket.algo.ts:127","pc":[350,351,352,353,354,355,356,357,358]},{"teal":289,"source":"contracts\\Ticket.algo.ts:127","pc":[359]},{"teal":290,"source":"contracts\\Ticket.algo.ts:127","pc":[360,361]},{"teal":294,"source":"contracts\\Ticket.algo.ts:128","pc":[362,363]},{"teal":295,"source":"contracts\\Ticket.algo.ts:128","pc":[364,365]},{"teal":299,"source":"contracts\\Ticket.algo.ts:129","pc":[366,367]},{"teal":300,"source":"contracts\\Ticket.algo.ts:129","pc":[368,369]},{"teal":303,"source":"contracts\\Ticket.algo.ts:126","pc":[370]},{"teal":304,"source":"contracts\\Ticket.algo.ts:126","pc":[371,372]},{"teal":307,"source":"contracts\\Ticket.algo.ts:126","pc":[373]},{"teal":311,"source":"contracts\\Ticket.algo.ts:133","pc":[374,375,376,377,378,379,380,381,382,383,384,385,386,387,388,389,390,391]},{"teal":312,"source":"contracts\\Ticket.algo.ts:133","pc":[392]},{"teal":313,"source":"contracts\\Ticket.algo.ts:133","pc":[393,394]},{"teal":314,"source":"contracts\\Ticket.algo.ts:133","pc":[395]},{"teal":315,"source":"contracts\\Ticket.algo.ts:133","pc":[396,397]},{"teal":319,"source":"contracts\\Ticket.algo.ts:135","pc":[398,399]},{"teal":322,"source":"contracts\\Ticket.algo.ts:125","pc":[400,401]},{"teal":323,"source":"contracts\\Ticket.algo.ts:125","pc":[402]},{"teal":326,"source":"contracts\\Ticket.algo.ts:29","pc":[403,404,405,406,407,408]},{"teal":327,"source":"contracts\\Ticket.algo.ts:29","pc":[409,410,411]},{"teal":328,"source":"contracts\\Ticket.algo.ts:29","pc":[412,413,414,415]},{"teal":331,"source":"contracts\\Ticket.algo.ts:29","errorMessage":"this contract does not implement the given ABI method for create NoOp","pc":[416]},{"teal":334,"source":"contracts\\Ticket.algo.ts:29","pc":[417,418,419,420,421,422]},{"teal":335,"source":"contracts\\Ticket.algo.ts:29","pc":[423,424,425,426,427,428]},{"teal":336,"source":"contracts\\Ticket.algo.ts:29","pc":[429,430,431]},{"teal":337,"source":"contracts\\Ticket.algo.ts:29","pc":[432,433,434,435,436,437]},{"teal":340,"source":"contracts\\Ticket.algo.ts:29","errorMessage":"this contract does not implement the given ABI method for call NoOp","pc":[438]}],"pcOffsetMethod":"none"},"clear":{"sourceInfo":[],"pcOffsetMethod":"none"}},"source":{"approval":"I3ByYWdtYSB2ZXJzaW9uIDEwCmludGNibG9jayAxIDAKYnl0ZWNibG9jayAweDcyNjU2NzY5NzM3NDY1NzI2NTY0NDM2Zjc1NmU3NCAweCAweDY1NzY2NTZlNzQ0ZTYxNmQ2NQoKLy8gVGhpcyBURUFMIHdhcyBnZW5lcmF0ZWQgYnkgVEVBTFNjcmlwdCB2MC4xMDYuMwovLyBodHRwczovL2dpdGh1Yi5jb20vYWxnb3JhbmRmb3VuZGF0aW9uL1RFQUxTY3JpcHQKCi8vIFRoaXMgY29udHJhY3QgaXMgY29tcGxpYW50IHdpdGggYW5kL29yIGltcGxlbWVudHMgdGhlIGZvbGxvd2luZyBBUkNzOiBbIEFSQzQgXQoKLy8gVGhlIGZvbGxvd2luZyB0ZW4gbGluZXMgb2YgVEVBTCBoYW5kbGUgaW5pdGlhbCBwcm9ncmFtIGZsb3cKLy8gVGhpcyBwYXR0ZXJuIGlzIHVzZWQgdG8gbWFrZSBpdCBlYXN5IGZvciBhbnlvbmUgdG8gcGFyc2UgdGhlIHN0YXJ0IG9mIHRoZSBwcm9ncmFtIGFuZCBkZXRlcm1pbmUgaWYgYSBzcGVjaWZpYyBhY3Rpb24gaXMgYWxsb3dlZAovLyBIZXJlLCBhY3Rpb24gcmVmZXJzIHRvIHRoZSBPbkNvbXBsZXRlIGluIGNvbWJpbmF0aW9uIHdpdGggd2hldGhlciB0aGUgYXBwIGlzIGJlaW5nIGNyZWF0ZWQgb3IgY2FsbGVkCi8vIEV2ZXJ5IHBvc3NpYmxlIGFjdGlvbiBmb3IgdGhpcyBjb250cmFjdCBpcyByZXByZXNlbnRlZCBpbiB0aGUgc3dpdGNoIHN0YXRlbWVudAovLyBJZiB0aGUgYWN0aW9uIGlzIG5vdCBpbXBsZW1lbnRlZCBpbiB0aGUgY29udHJhY3QsIGl0cyByZXNwZWN0aXZlIGJyYW5jaCB3aWxsIGJlICIqTk9UX0lNUExFTUVOVEVEIiB3aGljaCBqdXN0IGNvbnRhaW5zICJlcnIiCnR4biBBcHBsaWNhdGlvbklECiEKcHVzaGludCA2CioKdHhuIE9uQ29tcGxldGlvbgorCnN3aXRjaCAqY2FsbF9Ob09wICpOT1RfSU1QTEVNRU5URUQgKk5PVF9JTVBMRU1FTlRFRCAqTk9UX0lNUExFTUVOVEVEICpOT1RfSU1QTEVNRU5URUQgKk5PVF9JTVBMRU1FTlRFRCAqY3JlYXRlX05vT3AgKk5PVF9JTVBMRU1FTlRFRCAqTk9UX0lNUExFTUVOVEVEICpOT1RfSU1QTEVNRU5URUQgKk5PVF9JTVBMRU1FTlRFRCAqTk9UX0lNUExFTUVOVEVECgoqTk9UX0lNUExFTUVOVEVEOgoJLy8gVGhlIHJlcXVlc3RlZCBhY3Rpb24gaXMgbm90IGltcGxlbWVudGVkIGluIHRoaXMgY29udHJhY3QuIEFyZSB5b3UgdXNpbmcgdGhlIGNvcnJlY3QgT25Db21wbGV0ZT8gRGlkIHlvdSBzZXQgeW91ciBhcHAgSUQ/CgllcnIKCi8vIGNyZWF0ZUFwcGxpY2F0aW9uKHN0cmluZyxzdHJpbmcsdWludDY0LHVpbnQ2NCl2b2lkCiphYmlfcm91dGVfY3JlYXRlQXBwbGljYXRpb246CgkvLyBlbmRUaW1lOiB1aW50NjQKCXR4bmEgQXBwbGljYXRpb25BcmdzIDQKCWJ0b2kKCgkvLyBzdGFydFRpbWU6IHVpbnQ2NAoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMwoJYnRvaQoKCS8vIGxvY2F0aW9uOiBzdHJpbmcKCXR4bmEgQXBwbGljYXRpb25BcmdzIDIKCWV4dHJhY3QgMiAwCgoJLy8gZXZlbnROYW1lOiBzdHJpbmcKCXR4bmEgQXBwbGljYXRpb25BcmdzIDEKCWV4dHJhY3QgMiAwCgoJLy8gZXhlY3V0ZSBjcmVhdGVBcHBsaWNhdGlvbihzdHJpbmcsc3RyaW5nLHVpbnQ2NCx1aW50NjQpdm9pZAoJY2FsbHN1YiBjcmVhdGVBcHBsaWNhdGlvbgoJaW50YyAwIC8vIDEKCXJldHVybgoKLy8gY3JlYXRlQXBwbGljYXRpb24oZXZlbnROYW1lOiBzdHJpbmcsIGxvY2F0aW9uOiBzdHJpbmcsIHN0YXJ0VGltZTogdWludDY0LCBlbmRUaW1lOiB1aW50NjQpOiB2b2lkCmNyZWF0ZUFwcGxpY2F0aW9uOgoJcHJvdG8gNCAwCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjQ2CgkvLyB0aGlzLmNyZWF0b3JBZGRyZXNzLnZhbHVlID0gdGhpcy50eG4uc2VuZGVyCglwdXNoYnl0ZXMgMHg2MzcyNjU2MTc0NmY3MjQxNjQ2NDcyNjU3MzczIC8vICJjcmVhdG9yQWRkcmVzcyIKCXR4biBTZW5kZXIKCWFwcF9nbG9iYWxfcHV0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjQ3CgkvLyB0aGlzLmV2ZW50TmFtZS52YWx1ZSA9IGV2ZW50TmFtZQoJYnl0ZWMgMiAvLyAgImV2ZW50TmFtZSIKCWZyYW1lX2RpZyAtMSAvLyBldmVudE5hbWU6IHN0cmluZwoJZHVwCglsZW4KCWl0b2IKCWV4dHJhY3QgNiAyCglzd2FwCgljb25jYXQKCWFwcF9nbG9iYWxfcHV0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjQ4CgkvLyB0aGlzLmxvY2F0aW9uLnZhbHVlID0gbG9jYXRpb24KCXB1c2hieXRlcyAweDZjNmY2MzYxNzQ2OTZmNmUgLy8gImxvY2F0aW9uIgoJZnJhbWVfZGlnIC0yIC8vIGxvY2F0aW9uOiBzdHJpbmcKCWR1cAoJbGVuCglpdG9iCglleHRyYWN0IDYgMgoJc3dhcAoJY29uY2F0CglhcHBfZ2xvYmFsX3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo0OQoJLy8gdGhpcy5lbmRUaW1lLnZhbHVlID0gZW5kVGltZQoJcHVzaGJ5dGVzIDB4NjU2ZTY0NTQ2OTZkNjUgLy8gImVuZFRpbWUiCglmcmFtZV9kaWcgLTQgLy8gZW5kVGltZTogdWludDY0CglhcHBfZ2xvYmFsX3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo1MAoJLy8gdGhpcy5yZWdpc3RlcmVkQ291bnQudmFsdWUgPSAwCglieXRlYyAwIC8vICAicmVnaXN0ZXJlZENvdW50IgoJaW50YyAxIC8vIDAKCWFwcF9nbG9iYWxfcHV0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjUxCgkvLyB0aGlzLnN0YXJ0VGltZS52YWx1ZSA9IHN0YXJ0VGltZQoJcHVzaGJ5dGVzIDB4NzM3NDYxNzI3NDU0Njk2ZDY1IC8vICJzdGFydFRpbWUiCglmcmFtZV9kaWcgLTMgLy8gc3RhcnRUaW1lOiB1aW50NjQKCWFwcF9nbG9iYWxfcHV0CglyZXRzdWIKCi8vIGNyZWF0ZVRpY2tldHMoc3RyaW5nLHVpbnQ2NCl2b2lkCiphYmlfcm91dGVfY3JlYXRlVGlja2V0czoKCS8vIHRvdGFsVGlja2V0czogdWludDY0Cgl0eG5hIEFwcGxpY2F0aW9uQXJncyAyCglidG9pCgoJLy8gYXNzZXRVcmw6IHN0cmluZwoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQoJZXh0cmFjdCAyIDAKCgkvLyBleGVjdXRlIGNyZWF0ZVRpY2tldHMoc3RyaW5nLHVpbnQ2NCl2b2lkCgljYWxsc3ViIGNyZWF0ZVRpY2tldHMKCWludGMgMCAvLyAxCglyZXR1cm4KCi8vIGNyZWF0ZVRpY2tldHMoYXNzZXRVcmwgOiBzdHJpbmcsIHRvdGFsVGlja2V0czogdWludDY0KTogdm9pZApjcmVhdGVUaWNrZXRzOgoJcHJvdG8gMiAwCgoJLy8gUHVzaCBlbXB0eSBieXRlcyBhZnRlciB0aGUgZnJhbWUgcG9pbnRlciB0byByZXNlcnZlIHNwYWNlIGZvciBsb2NhbCB2YXJpYWJsZXMKCWJ5dGVjIDEgLy8gMHgKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6NjMKCS8vIGFzc2VydCh0aGlzLnR4bi5zZW5kZXIgPT0gdGhpcy5hcHAuY3JlYXRvciwgIk9ubHkgVGhlIEV2ZW50IENyZWF0b3IgY2FuIE1pbnQgVGlja2V0cyIpCgl0eG4gU2VuZGVyCgl0eG5hIEFwcGxpY2F0aW9ucyAwCglhcHBfcGFyYW1zX2dldCBBcHBDcmVhdG9yCglwb3AKCT09CgoJLy8gT25seSBUaGUgRXZlbnQgQ3JlYXRvciBjYW4gTWludCBUaWNrZXRzCglhc3NlcnQKCgkvLyAqaWYwX2NvbmRpdGlvbgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjY1CgkvLyB0b3RhbFRpY2tldHM+MjU1CglmcmFtZV9kaWcgLTIgLy8gdG90YWxUaWNrZXRzOiB1aW50NjQKCXB1c2hpbnQgMjU1Cgk+CglieiAqaWYwX2VuZAoKCS8vICppZjBfY29uc2VxdWVudAoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjY2CgkvLyBhc3NlcnQoZmFsc2UsIlRoZSBNYXhpbXVtIG51bWJlciBvZiBUaWNrZXRzIHRoYXQgY2FuIG1pbnRlZCBhcmUgMjU1IikKCWludGMgMSAvLyAwCgoJLy8gVGhlIE1heGltdW0gbnVtYmVyIG9mIFRpY2tldHMgdGhhdCBjYW4gbWludGVkIGFyZSAyNTUKCWFzc2VydAoKKmlmMF9lbmQ6CgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6NjgKCS8vIGl0eG5SZXN1bHQgPSBzZW5kQXNzZXRDcmVhdGlvbih7CgkvLyAgICAgICAgICAgICBjb25maWdBc3NldFRvdGFsOiB0b3RhbFRpY2tldHMsICAvLyBVc2UgY29uZmlnQXNzZXRUb3RhbCBpbnN0ZWFkIG9mIHRvdGFsCgkvLyAgICAgICAgICAgICBjb25maWdBc3NldERlY2ltYWxzOiAwLCAgICAgIC8vIFVzZSBjb25maWdBc3NldERlY2ltYWxzIGluc3RlYWQgb2YgZGVjaW1hbHMKCS8vICAgICAgICAgICAgIGNvbmZpZ0Fzc2V0VW5pdE5hbWU6ICJUQ0tUIiwgIC8vIFVzZSBjb25maWdBc3NldFVuaXROYW1lIGluc3RlYWQgb2YgdW5pdE5hbWUKCS8vICAgICAgICAgICAgIGNvbmZpZ0Fzc2V0TmFtZTogdGhpcy5ldmVudE5hbWUudmFsdWUsIC8vIFVzZSBjb25maWdBc3NldE5hbWUgaW5zdGVhZCBvZiBhc3NldE5hbWUKCS8vICAgICAgICAgICAgIGNvbmZpZ0Fzc2V0VVJMIDogYXNzZXRVcmwsCgkvLyAgICAgICAgICAgICBmZWU6IDMwMDAsCgkvLwoJLy8KCS8vCgkvLwoJLy8gICAgICAgfSkKCWl0eG5fYmVnaW4KCXB1c2hpbnQgMyAvLyBhY2ZnCglpdHhuX2ZpZWxkIFR5cGVFbnVtCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjY5CgkvLyBjb25maWdBc3NldFRvdGFsOiB0b3RhbFRpY2tldHMKCWZyYW1lX2RpZyAtMiAvLyB0b3RhbFRpY2tldHM6IHVpbnQ2NAoJaXR4bl9maWVsZCBDb25maWdBc3NldFRvdGFsCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjcwCgkvLyBjb25maWdBc3NldERlY2ltYWxzOiAwCglpbnRjIDEgLy8gMAoJaXR4bl9maWVsZCBDb25maWdBc3NldERlY2ltYWxzCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjcxCgkvLyBjb25maWdBc3NldFVuaXROYW1lOiAiVENLVCIKCXB1c2hieXRlcyAweDU0NDM0YjU0IC8vICJUQ0tUIgoJaXR4bl9maWVsZCBDb25maWdBc3NldFVuaXROYW1lCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjcyCgkvLyBjb25maWdBc3NldE5hbWU6IHRoaXMuZXZlbnROYW1lLnZhbHVlCglieXRlYyAyIC8vICAiZXZlbnROYW1lIgoJYXBwX2dsb2JhbF9nZXQKCWV4dHJhY3QgMiAwCglpdHhuX2ZpZWxkIENvbmZpZ0Fzc2V0TmFtZQoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo3MwoJLy8gY29uZmlnQXNzZXRVUkwgOiBhc3NldFVybAoJZnJhbWVfZGlnIC0xIC8vIGFzc2V0VXJsOiBzdHJpbmcKCWl0eG5fZmllbGQgQ29uZmlnQXNzZXRVUkwKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6NzQKCS8vIGZlZTogMzAwMAoJcHVzaGludCAzMDAwCglpdHhuX2ZpZWxkIEZlZQoKCS8vIFN1Ym1pdCBpbm5lciB0cmFuc2FjdGlvbgoJaXR4bl9zdWJtaXQKCWl0eG4gQ3JlYXRlZEFzc2V0SUQKCWZyYW1lX2J1cnkgMCAvLyBpdHhuUmVzdWx0OiB1aW50NjQKCXJldHN1YgoKLy8gcmVnaXN0ZXJFdmVudCgpdm9pZAoqYWJpX3JvdXRlX3JlZ2lzdGVyRXZlbnQ6CgkvLyBleGVjdXRlIHJlZ2lzdGVyRXZlbnQoKXZvaWQKCWNhbGxzdWIgcmVnaXN0ZXJFdmVudAoJaW50YyAwIC8vIDEKCXJldHVybgoKLy8gcmVnaXN0ZXJFdmVudCgpOiB2b2lkCnJlZ2lzdGVyRXZlbnQ6Cglwcm90byAwIDAKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6OTAKCS8vIGFzc2VydCghdGhpcy5yZWdpc3RlcmVkTWFwKHRoaXMudHhuLnNlbmRlcikuZXhpc3RzLCAnYWxyZWFkeSBjbGFpbWVkJykKCXR4biBTZW5kZXIKCWJveF9sZW4KCXN3YXAKCXBvcAoJIQoKCS8vIGFscmVhZHkgY2xhaW1lZAoJYXNzZXJ0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjkxCgkvLyB0aGlzLnJlZ2lzdGVyZWRDb3VudC52YWx1ZSArPSAxCglieXRlYyAwIC8vICAicmVnaXN0ZXJlZENvdW50IgoJYXBwX2dsb2JhbF9nZXQKCWludGMgMCAvLyAxCgkrCglieXRlYyAwIC8vICAicmVnaXN0ZXJlZENvdW50IgoJc3dhcAoJYXBwX2dsb2JhbF9wdXQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6OTIKCS8vIHRoaXMucmVnaXN0ZXJlZE1hcCh0aGlzLnR4bi5zZW5kZXIpLnZhbHVlID0gdGhpcy50eG4udHhJRCBhcyBieXRlczMyCgl0eG4gU2VuZGVyCgl0eG4gVHhJRAoJcHVzaGJ5dGVzIDB4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMAoJY29uY2F0CglkdXAKCWV4dHJhY3QgMzIgMAoJYnl0ZWMgMSAvLyAweAoJYj09Cglhc3NlcnQKCWV4dHJhY3QgMCAzMgoJYm94X3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo5NwoJLy8gdGhpcy5zZW5kVGlja2V0cygxLHRoaXMudHhuLnNlbmRlcikKCXR4biBTZW5kZXIKCWludGMgMCAvLyAxCgljYWxsc3ViIHNlbmRUaWNrZXRzCglyZXRzdWIKCi8vIHNlbmRUaWNrZXRzKGFtb3VudFRvU2VuZDogdWludDY0LCByZWNlaXZlcjpBZGRyZXNzKTogdWludDY0Ci8vCi8vIFNlbmRzIGEgc3BlY2lmaWVkIGFtb3VudCBvZiB0b2tlbnMgZnJvbSBhIHRva2VuIGRyb3AgdG8gdGhlIGdpdmVuIHJlY2VpdmVyCi8vIGFuZCB1cGRhdGVzIHRoZSByZW1haW5pbmcgYmFsYW5jZSBvZiB0aGUgZHJvcC4gSWYgdGhlIGRyb3AgaXMgZnVsbHkgY2xhaW1lZCwKLy8gaXQgaXMgcmVtb3ZlZCBmcm9tIHRoZSBhY3RpdmUgZHJvcHMuCi8vCi8vIEBwYXJhbSB7dWludDY0fSBhbW91bnRUb1NlbmQgLSBJbmZvcm1hdGlvbiBhYm91dCB0aGUgdG9rZW4gZHJvcCwgaW5jbHVkaW5nIHRoZSB0b2tlbiB0eXBlIGFuZCByZW1haW5pbmcgYmFsYW5jZS4KLy8gQHBhcmFtIHtBZGRyZXNzfSByZWNlaXZlciAtIFRoZSBhZGRyZXNzIG9mIHRoZSByZWNpcGllbnQgd2hvIHdpbGwgcmVjZWl2ZSB0aGUgdG9rZW5zLgovLyBAcmV0dXJuIHt1aW50NjR9IFRoZSByZW1haW5pbmcgYmFsYW5jZSBvZiB0b2tlbnMgaW4gdGhlIHRva2VuIGRyb3AgYWZ0ZXIgdGhlIHRyYW5zZmVyLgpzZW5kVGlja2V0czoKCXByb3RvIDIgMQoKCS8vIFB1c2ggZW1wdHkgYnl0ZXMgYWZ0ZXIgdGhlIGZyYW1lIHBvaW50ZXIgdG8gcmVzZXJ2ZSBzcGFjZSBmb3IgbG9jYWwgdmFyaWFibGVzCglieXRlYyAxIC8vIDB4CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjEyNgoJLy8gc2VuZEFzc2V0VHJhbnNmZXIoewoJLy8gICAgICAgICAgIHhmZXJBc3NldDogQXNzZXRJRC5mcm9tVWludDY0KHRoaXMuYXNzZXRJRC52YWx1ZSksCgkvLyAgICAgICAgICAgYXNzZXRSZWNlaXZlcjogcmVjZWl2ZXIsCgkvLyAgICAgICAgICAgYXNzZXRBbW91bnQ6IGFtb3VudFRvU2VuZCwKCS8vICAgICAgIH0pCglpdHhuX2JlZ2luCglwdXNoaW50IDQgLy8gYXhmZXIKCWl0eG5fZmllbGQgVHlwZUVudW0KCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6MTI3CgkvLyB4ZmVyQXNzZXQ6IEFzc2V0SUQuZnJvbVVpbnQ2NCh0aGlzLmFzc2V0SUQudmFsdWUpCglwdXNoYnl0ZXMgMHg2MTczNzM2NTc0NDk0NCAvLyAiYXNzZXRJRCIKCWFwcF9nbG9iYWxfZ2V0CglpdHhuX2ZpZWxkIFhmZXJBc3NldAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czoxMjgKCS8vIGFzc2V0UmVjZWl2ZXI6IHJlY2VpdmVyCglmcmFtZV9kaWcgLTIgLy8gcmVjZWl2ZXI6IEFkZHJlc3MKCWl0eG5fZmllbGQgQXNzZXRSZWNlaXZlcgoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czoxMjkKCS8vIGFzc2V0QW1vdW50OiBhbW91bnRUb1NlbmQKCWZyYW1lX2RpZyAtMSAvLyBhbW91bnRUb1NlbmQ6IHVpbnQ2NAoJaXR4bl9maWVsZCBBc3NldEFtb3VudAoKCS8vIEZlZSBmaWVsZCBub3Qgc2V0LCBkZWZhdWx0aW5nIHRvIDAKCWludGMgMSAvLyAwCglpdHhuX2ZpZWxkIEZlZQoKCS8vIFN1Ym1pdCBpbm5lciB0cmFuc2FjdGlvbgoJaXR4bl9zdWJtaXQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6MTMzCgkvLyByZW1haW5pbmcgPSB0aGlzLnRpY2tldHNSZW1haW5pbmcudmFsdWUgLSBhbW91bnRUb1NlbmQKCXB1c2hieXRlcyAweDc0Njk2MzZiNjU3NDczNTI2NTZkNjE2OTZlNjk2ZTY3IC8vICJ0aWNrZXRzUmVtYWluaW5nIgoJYXBwX2dsb2JhbF9nZXQKCWZyYW1lX2RpZyAtMSAvLyBhbW91bnRUb1NlbmQ6IHVpbnQ2NAoJLQoJZnJhbWVfYnVyeSAwIC8vIHJlbWFpbmluZzogdWludDY0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjEzNQoJLy8gcmV0dXJuIHJlbWFpbmluZwoJZnJhbWVfZGlnIDAgLy8gcmVtYWluaW5nOiB1aW50NjQKCgkvLyBzZXQgdGhlIHN1YnJvdXRpbmUgcmV0dXJuIHZhbHVlCglmcmFtZV9idXJ5IDAKCXJldHN1YgoKKmNyZWF0ZV9Ob09wOgoJcHVzaGJ5dGVzIDB4MDg5MzY3MDkgLy8gbWV0aG9kICJjcmVhdGVBcHBsaWNhdGlvbihzdHJpbmcsc3RyaW5nLHVpbnQ2NCx1aW50NjQpdm9pZCIKCXR4bmEgQXBwbGljYXRpb25BcmdzIDAKCW1hdGNoICphYmlfcm91dGVfY3JlYXRlQXBwbGljYXRpb24KCgkvLyB0aGlzIGNvbnRyYWN0IGRvZXMgbm90IGltcGxlbWVudCB0aGUgZ2l2ZW4gQUJJIG1ldGhvZCBmb3IgY3JlYXRlIE5vT3AKCWVycgoKKmNhbGxfTm9PcDoKCXB1c2hieXRlcyAweDAxNmE0NTAwIC8vIG1ldGhvZCAiY3JlYXRlVGlja2V0cyhzdHJpbmcsdWludDY0KXZvaWQiCglwdXNoYnl0ZXMgMHg4OTk2NWMzYiAvLyBtZXRob2QgInJlZ2lzdGVyRXZlbnQoKXZvaWQiCgl0eG5hIEFwcGxpY2F0aW9uQXJncyAwCgltYXRjaCAqYWJpX3JvdXRlX2NyZWF0ZVRpY2tldHMgKmFiaV9yb3V0ZV9yZWdpc3RlckV2ZW50CgoJLy8gdGhpcyBjb250cmFjdCBkb2VzIG5vdCBpbXBsZW1lbnQgdGhlIGdpdmVuIEFCSSBtZXRob2QgZm9yIGNhbGwgTm9PcAoJZXJy","clear":"I3ByYWdtYSB2ZXJzaW9uIDEw"},"byteCode":{"approval":"CiACAQAmAw9yZWdpc3RlcmVkQ291bnQACWV2ZW50TmFtZTEYFIEGCzEZCI0MAVwAAAAAAAAAAAAAAU4AAAAAAAAAAAAAADYaBBc2GgMXNhoCVwIANhoBVwIAiAACIkOKBACADmNyZWF0b3JBZGRyZXNzMQBnKov/SRUWVwYCTFBngAhsb2NhdGlvbov+SRUWVwYCTFBngAdlbmRUaW1li/xnKCNngAlzdGFydFRpbWWL/WeJNhoCFzYaAVcCAIgAAiJDigIAKTEANjIAcgdIEkSL/oH/AQ1BAAIjRLGBA7IQi/6yIiOyI4AEVENLVLIlKmRXAgCyJov/sieBuBeyAbO0PIwAiYgAAiJDigAAMQC9TEgURChkIggoTGcxADEXgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFBJVyAAKahEVwAgvzEAIogAAYmKAgEpsYEEshCAB2Fzc2V0SURkshGL/rIUi/+yEiOyAbOAEHRpY2tldHNSZW1haW5pbmdki/8JjACLAIwAiYAECJNnCTYaAI4B/qYAgAQBakUAgASJllw7NhoAjgL+/v9QAA==","clear":"Cg=="},"compilerInfo":{"compiler":"algod","compilerVersion":{"major":3,"minor":27,"patch":0,"commitHash":"f54f0997"}}} as unknown as Arc56Contract
+export const APP_SPEC: Arc56Contract = {"name":"Ticket","desc":"","methods":[{"name":"createApplication","args":[{"name":"eventName","type":"string"},{"name":"location","type":"string"},{"name":"startTime","type":"uint64"},{"name":"endTime","type":"uint64"},{"name":"eventCost","type":"uint64"}],"returns":{"type":"void"},"actions":{"create":["NoOp"],"call":[]}},{"name":"createTickets","args":[{"name":"assetUrl","type":"string"},{"name":"totalTickets","type":"uint64"}],"returns":{"type":"void"},"actions":{"create":[],"call":["NoOp"]}},{"name":"registerEvent","args":[{"name":"email","type":"string"}],"returns":{"type":"void"},"actions":{"create":[],"call":["NoOp"]}},{"name":"withDrawFunds","args":[{"name":"funds","type":"uint64"}],"returns":{"type":"void"},"actions":{"create":[],"call":["NoOp"]}}],"arcs":[4,56],"structs":{},"state":{"schema":{"global":{"bytes":3,"ints":6},"local":{"bytes":0,"ints":0}},"keys":{"global":{"creatorAddress":{"key":"Y3JlYXRvckFkZHJlc3M=","keyType":"AVMBytes","valueType":"address"},"eventName":{"key":"ZXZlbnROYW1l","keyType":"AVMBytes","valueType":"string"},"location":{"key":"bG9jYXRpb24=","keyType":"AVMBytes","valueType":"string"},"startTime":{"key":"c3RhcnRUaW1l","keyType":"AVMBytes","valueType":"uint64"},"endTime":{"key":"ZW5kVGltZQ==","keyType":"AVMBytes","valueType":"uint64"},"registeredCount":{"key":"cmVnaXN0ZXJlZENvdW50","keyType":"AVMBytes","valueType":"uint64"},"eventCost":{"key":"ZXZlbnRDb3N0","keyType":"AVMBytes","valueType":"uint64"},"assetID":{"key":"YXNzZXRJRA==","keyType":"AVMBytes","valueType":"uint64"},"ticketsRemaining":{"key":"dGlja2V0c1JlbWFpbmluZw==","keyType":"AVMBytes","valueType":"uint64"}},"local":{},"box":{}},"maps":{"global":{},"local":{},"box":{"registeredMap":{"keyType":"address","valueType":"string"}}}},"bareActions":{"create":[],"call":[]},"sourceInfo":{"approval":{"sourceInfo":[{"teal":1,"source":"contracts\\Ticket.algo.ts:31","pc":[0]},{"teal":2,"source":"contracts\\Ticket.algo.ts:31","pc":[1,2,3,4]},{"teal":3,"source":"contracts\\Ticket.algo.ts:31","pc":[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41]},{"teal":15,"source":"contracts\\Ticket.algo.ts:31","pc":[42,43]},{"teal":16,"source":"contracts\\Ticket.algo.ts:31","pc":[44]},{"teal":17,"source":"contracts\\Ticket.algo.ts:31","pc":[45,46]},{"teal":18,"source":"contracts\\Ticket.algo.ts:31","pc":[47]},{"teal":19,"source":"contracts\\Ticket.algo.ts:31","pc":[48,49]},{"teal":20,"source":"contracts\\Ticket.algo.ts:31","pc":[50]},{"teal":21,"source":"contracts\\Ticket.algo.ts:31","pc":[51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76]},{"teal":25,"source":"contracts\\Ticket.algo.ts:31","errorMessage":"The requested action is not implemented in this contract. Are you using the correct OnComplete? Did you set your app ID?","pc":[77]},{"teal":30,"source":"contracts\\Ticket.algo.ts:48","pc":[78,79,80]},{"teal":31,"source":"contracts\\Ticket.algo.ts:48","pc":[81]},{"teal":34,"source":"contracts\\Ticket.algo.ts:48","pc":[82,83,84]},{"teal":35,"source":"contracts\\Ticket.algo.ts:48","pc":[85]},{"teal":38,"source":"contracts\\Ticket.algo.ts:48","pc":[86,87,88]},{"teal":39,"source":"contracts\\Ticket.algo.ts:48","pc":[89]},{"teal":42,"source":"contracts\\Ticket.algo.ts:48","pc":[90,91,92]},{"teal":43,"source":"contracts\\Ticket.algo.ts:48","pc":[93,94,95]},{"teal":46,"source":"contracts\\Ticket.algo.ts:48","pc":[96,97,98]},{"teal":47,"source":"contracts\\Ticket.algo.ts:48","pc":[99,100,101]},{"teal":50,"source":"contracts\\Ticket.algo.ts:48","pc":[102,103,104]},{"teal":51,"source":"contracts\\Ticket.algo.ts:48","pc":[105]},{"teal":52,"source":"contracts\\Ticket.algo.ts:48","pc":[106]},{"teal":56,"source":"contracts\\Ticket.algo.ts:48","pc":[107,108,109]},{"teal":60,"source":"contracts\\Ticket.algo.ts:50","pc":[110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125]},{"teal":61,"source":"contracts\\Ticket.algo.ts:50","pc":[126,127]},{"teal":62,"source":"contracts\\Ticket.algo.ts:50","pc":[128]},{"teal":66,"source":"contracts\\Ticket.algo.ts:51","pc":[129]},{"teal":67,"source":"contracts\\Ticket.algo.ts:51","pc":[130,131]},{"teal":68,"source":"contracts\\Ticket.algo.ts:51","pc":[132]},{"teal":69,"source":"contracts\\Ticket.algo.ts:51","pc":[133]},{"teal":70,"source":"contracts\\Ticket.algo.ts:51","pc":[134]},{"teal":71,"source":"contracts\\Ticket.algo.ts:51","pc":[135,136,137]},{"teal":72,"source":"contracts\\Ticket.algo.ts:51","pc":[138]},{"teal":73,"source":"contracts\\Ticket.algo.ts:51","pc":[139]},{"teal":74,"source":"contracts\\Ticket.algo.ts:51","pc":[140]},{"teal":78,"source":"contracts\\Ticket.algo.ts:52","pc":[141,142,143,144,145,146,147,148,149,150]},{"teal":79,"source":"contracts\\Ticket.algo.ts:52","pc":[151,152]},{"teal":80,"source":"contracts\\Ticket.algo.ts:52","pc":[153]},{"teal":81,"source":"contracts\\Ticket.algo.ts:52","pc":[154]},{"teal":82,"source":"contracts\\Ticket.algo.ts:52","pc":[155]},{"teal":83,"source":"contracts\\Ticket.algo.ts:52","pc":[156,157,158]},{"teal":84,"source":"contracts\\Ticket.algo.ts:52","pc":[159]},{"teal":85,"source":"contracts\\Ticket.algo.ts:52","pc":[160]},{"teal":86,"source":"contracts\\Ticket.algo.ts:52","pc":[161]},{"teal":90,"source":"contracts\\Ticket.algo.ts:53","pc":[162,163,164,165,166,167,168,169,170]},{"teal":91,"source":"contracts\\Ticket.algo.ts:53","pc":[171,172]},{"teal":92,"source":"contracts\\Ticket.algo.ts:53","pc":[173]},{"teal":96,"source":"contracts\\Ticket.algo.ts:54","pc":[174]},{"teal":97,"source":"contracts\\Ticket.algo.ts:54","pc":[175]},{"teal":98,"source":"contracts\\Ticket.algo.ts:54","pc":[176]},{"teal":102,"source":"contracts\\Ticket.algo.ts:55","pc":[177,178,179,180,181,182,183,184,185,186,187]},{"teal":103,"source":"contracts\\Ticket.algo.ts:55","pc":[188,189]},{"teal":104,"source":"contracts\\Ticket.algo.ts:55","pc":[190]},{"teal":108,"source":"contracts\\Ticket.algo.ts:56","pc":[191,192,193,194,195,196,197,198,199,200,201]},{"teal":109,"source":"contracts\\Ticket.algo.ts:56","pc":[202,203]},{"teal":110,"source":"contracts\\Ticket.algo.ts:56","pc":[204]},{"teal":111,"source":"contracts\\Ticket.algo.ts:48","pc":[205]},{"teal":116,"source":"contracts\\Ticket.algo.ts:65","pc":[206,207,208]},{"teal":117,"source":"contracts\\Ticket.algo.ts:65","pc":[209]},{"teal":120,"source":"contracts\\Ticket.algo.ts:65","pc":[210,211,212]},{"teal":121,"source":"contracts\\Ticket.algo.ts:65","pc":[213,214,215]},{"teal":124,"source":"contracts\\Ticket.algo.ts:65","pc":[216,217,218]},{"teal":125,"source":"contracts\\Ticket.algo.ts:65","pc":[219]},{"teal":126,"source":"contracts\\Ticket.algo.ts:65","pc":[220]},{"teal":130,"source":"contracts\\Ticket.algo.ts:65","pc":[221,222,223]},{"teal":133,"source":"contracts\\Ticket.algo.ts:65","pc":[224]},{"teal":137,"source":"contracts\\Ticket.algo.ts:67","pc":[225,226]},{"teal":138,"source":"contracts\\Ticket.algo.ts:67","pc":[227,228,229]},{"teal":139,"source":"contracts\\Ticket.algo.ts:67","pc":[230,231]},{"teal":140,"source":"contracts\\Ticket.algo.ts:67","pc":[232]},{"teal":141,"source":"contracts\\Ticket.algo.ts:67","pc":[233]},{"teal":144,"source":"contracts\\Ticket.algo.ts:67","errorMessage":"Only The Event Creator can Mint Tickets","pc":[234]},{"teal":159,"source":"contracts\\Ticket.algo.ts:70","pc":[235]},{"teal":160,"source":"contracts\\Ticket.algo.ts:70","pc":[236,237]},{"teal":161,"source":"contracts\\Ticket.algo.ts:70","pc":[238,239]},{"teal":165,"source":"contracts\\Ticket.algo.ts:71","pc":[240,241]},{"teal":166,"source":"contracts\\Ticket.algo.ts:71","pc":[242,243]},{"teal":170,"source":"contracts\\Ticket.algo.ts:72","pc":[244]},{"teal":171,"source":"contracts\\Ticket.algo.ts:72","pc":[245,246]},{"teal":175,"source":"contracts\\Ticket.algo.ts:73","pc":[247,248,249,250,251,252]},{"teal":176,"source":"contracts\\Ticket.algo.ts:73","pc":[253,254]},{"teal":180,"source":"contracts\\Ticket.algo.ts:74","pc":[255]},{"teal":181,"source":"contracts\\Ticket.algo.ts:74","pc":[256]},{"teal":182,"source":"contracts\\Ticket.algo.ts:74","pc":[257,258,259]},{"teal":183,"source":"contracts\\Ticket.algo.ts:74","pc":[260,261]},{"teal":187,"source":"contracts\\Ticket.algo.ts:75","pc":[262,263]},{"teal":188,"source":"contracts\\Ticket.algo.ts:75","pc":[264,265]},{"teal":192,"source":"contracts\\Ticket.algo.ts:76","pc":[266,267,268]},{"teal":193,"source":"contracts\\Ticket.algo.ts:76","pc":[269,270]},{"teal":196,"source":"contracts\\Ticket.algo.ts:70","pc":[271]},{"teal":197,"source":"contracts\\Ticket.algo.ts:70","pc":[272,273]},{"teal":198,"source":"contracts\\Ticket.algo.ts:70","pc":[274,275]},{"teal":202,"source":"contracts\\Ticket.algo.ts:83","pc":[276]},{"teal":203,"source":"contracts\\Ticket.algo.ts:83","pc":[277,278]},{"teal":204,"source":"contracts\\Ticket.algo.ts:83","pc":[279]},{"teal":205,"source":"contracts\\Ticket.algo.ts:65","pc":[280]},{"teal":210,"source":"contracts\\Ticket.algo.ts:91","pc":[281,282,283]},{"teal":211,"source":"contracts\\Ticket.algo.ts:91","pc":[284,285,286]},{"teal":214,"source":"contracts\\Ticket.algo.ts:91","pc":[287,288,289]},{"teal":215,"source":"contracts\\Ticket.algo.ts:91","pc":[290]},{"teal":216,"source":"contracts\\Ticket.algo.ts:91","pc":[291]},{"teal":220,"source":"contracts\\Ticket.algo.ts:91","pc":[292,293,294]},{"teal":224,"source":"contracts\\Ticket.algo.ts:94","pc":[295,296]},{"teal":225,"source":"contracts\\Ticket.algo.ts:94","pc":[297]},{"teal":226,"source":"contracts\\Ticket.algo.ts:94","pc":[298]},{"teal":227,"source":"contracts\\Ticket.algo.ts:94","pc":[299]},{"teal":228,"source":"contracts\\Ticket.algo.ts:94","pc":[300]},{"teal":231,"source":"contracts\\Ticket.algo.ts:94","errorMessage":"already claimed","pc":[301]},{"teal":235,"source":"contracts\\Ticket.algo.ts:95","pc":[302]},{"teal":236,"source":"contracts\\Ticket.algo.ts:95","pc":[303]},{"teal":237,"source":"contracts\\Ticket.algo.ts:95","pc":[304]},{"teal":238,"source":"contracts\\Ticket.algo.ts:95","pc":[305]},{"teal":239,"source":"contracts\\Ticket.algo.ts:95","pc":[306]},{"teal":240,"source":"contracts\\Ticket.algo.ts:95","pc":[307]},{"teal":241,"source":"contracts\\Ticket.algo.ts:95","pc":[308]},{"teal":245,"source":"contracts\\Ticket.algo.ts:96","pc":[309,310]},{"teal":246,"source":"contracts\\Ticket.algo.ts:96","pc":[311]},{"teal":247,"source":"contracts\\Ticket.algo.ts:96","pc":[312]},{"teal":248,"source":"contracts\\Ticket.algo.ts:96","pc":[313]},{"teal":249,"source":"contracts\\Ticket.algo.ts:96","pc":[314,315]},{"teal":250,"source":"contracts\\Ticket.algo.ts:96","pc":[316]},{"teal":251,"source":"contracts\\Ticket.algo.ts:96","pc":[317]},{"teal":252,"source":"contracts\\Ticket.algo.ts:96","pc":[318]},{"teal":253,"source":"contracts\\Ticket.algo.ts:96","pc":[319,320,321]},{"teal":254,"source":"contracts\\Ticket.algo.ts:96","pc":[322]},{"teal":255,"source":"contracts\\Ticket.algo.ts:96","pc":[323]},{"teal":256,"source":"contracts\\Ticket.algo.ts:96","pc":[324]},{"teal":260,"source":"contracts\\Ticket.algo.ts:101","pc":[325,326]},{"teal":261,"source":"contracts\\Ticket.algo.ts:101","pc":[327]},{"teal":262,"source":"contracts\\Ticket.algo.ts:101","pc":[328,329,330]},{"teal":263,"source":"contracts\\Ticket.algo.ts:91","pc":[331]},{"teal":268,"source":"contracts\\Ticket.algo.ts:109","pc":[332,333,334]},{"teal":269,"source":"contracts\\Ticket.algo.ts:109","pc":[335]},{"teal":272,"source":"contracts\\Ticket.algo.ts:109","pc":[336,337,338]},{"teal":273,"source":"contracts\\Ticket.algo.ts:109","pc":[339]},{"teal":274,"source":"contracts\\Ticket.algo.ts:109","pc":[340]},{"teal":278,"source":"contracts\\Ticket.algo.ts:109","pc":[341,342,343]},{"teal":282,"source":"contracts\\Ticket.algo.ts:112","pc":[344]},{"teal":283,"source":"contracts\\Ticket.algo.ts:112","pc":[345]},{"teal":284,"source":"contracts\\Ticket.algo.ts:112","pc":[346,347]},{"teal":288,"source":"contracts\\Ticket.algo.ts:112","pc":[348,349]},{"teal":289,"source":"contracts\\Ticket.algo.ts:112","pc":[350,351]},{"teal":293,"source":"contracts\\Ticket.algo.ts:112","pc":[352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387,388,389]},{"teal":294,"source":"contracts\\Ticket.algo.ts:112","pc":[390,391]},{"teal":297,"source":"contracts\\Ticket.algo.ts:112","pc":[392]},{"teal":298,"source":"contracts\\Ticket.algo.ts:112","pc":[393,394]},{"teal":301,"source":"contracts\\Ticket.algo.ts:112","pc":[395]},{"teal":302,"source":"contracts\\Ticket.algo.ts:109","pc":[396]},{"teal":314,"source":"contracts\\Ticket.algo.ts:131","pc":[397,398,399]},{"teal":317,"source":"contracts\\Ticket.algo.ts:131","pc":[400]},{"teal":325,"source":"contracts\\Ticket.algo.ts:132","pc":[401]},{"teal":326,"source":"contracts\\Ticket.algo.ts:132","pc":[402,403]},{"teal":327,"source":"contracts\\Ticket.algo.ts:132","pc":[404,405]},{"teal":331,"source":"contracts\\Ticket.algo.ts:133","pc":[406]},{"teal":332,"source":"contracts\\Ticket.algo.ts:133","pc":[407]},{"teal":333,"source":"contracts\\Ticket.algo.ts:133","pc":[408,409]},{"teal":337,"source":"contracts\\Ticket.algo.ts:134","pc":[410,411]},{"teal":338,"source":"contracts\\Ticket.algo.ts:134","pc":[412,413]},{"teal":342,"source":"contracts\\Ticket.algo.ts:135","pc":[414,415]},{"teal":343,"source":"contracts\\Ticket.algo.ts:135","pc":[416,417]},{"teal":346,"source":"contracts\\Ticket.algo.ts:132","pc":[418]},{"teal":347,"source":"contracts\\Ticket.algo.ts:132","pc":[419,420]},{"teal":350,"source":"contracts\\Ticket.algo.ts:132","pc":[421]},{"teal":354,"source":"contracts\\Ticket.algo.ts:139","pc":[422,423,424,425,426,427,428,429,430,431,432,433,434,435,436,437,438,439]},{"teal":355,"source":"contracts\\Ticket.algo.ts:139","pc":[440]},{"teal":356,"source":"contracts\\Ticket.algo.ts:139","pc":[441,442]},{"teal":357,"source":"contracts\\Ticket.algo.ts:139","pc":[443]},{"teal":358,"source":"contracts\\Ticket.algo.ts:139","pc":[444,445]},{"teal":362,"source":"contracts\\Ticket.algo.ts:141","pc":[446,447]},{"teal":365,"source":"contracts\\Ticket.algo.ts:131","pc":[448,449]},{"teal":366,"source":"contracts\\Ticket.algo.ts:131","pc":[450]},{"teal":369,"source":"contracts\\Ticket.algo.ts:31","pc":[451,452,453,454,455,456]},{"teal":370,"source":"contracts\\Ticket.algo.ts:31","pc":[457,458,459]},{"teal":371,"source":"contracts\\Ticket.algo.ts:31","pc":[460,461,462,463]},{"teal":374,"source":"contracts\\Ticket.algo.ts:31","errorMessage":"this contract does not implement the given ABI method for create NoOp","pc":[464]},{"teal":377,"source":"contracts\\Ticket.algo.ts:31","pc":[465,466,467,468,469,470]},{"teal":378,"source":"contracts\\Ticket.algo.ts:31","pc":[471,472,473,474,475,476]},{"teal":379,"source":"contracts\\Ticket.algo.ts:31","pc":[477,478,479,480,481,482]},{"teal":380,"source":"contracts\\Ticket.algo.ts:31","pc":[483,484,485]},{"teal":381,"source":"contracts\\Ticket.algo.ts:31","pc":[486,487,488,489,490,491,492,493]},{"teal":384,"source":"contracts\\Ticket.algo.ts:31","errorMessage":"this contract does not implement the given ABI method for call NoOp","pc":[494]}],"pcOffsetMethod":"none"},"clear":{"sourceInfo":[],"pcOffsetMethod":"none"}},"source":{"approval":"I3ByYWdtYSB2ZXJzaW9uIDEwCmludGNibG9jayAxIDAKYnl0ZWNibG9jayAweDcyNjU2NzY5NzM3NDY1NzI2NTY0NDM2Zjc1NmU3NCAweDY1NzY2NTZlNzQ0ZTYxNmQ2NSAweDYxNzM3MzY1NzQ0OTQ0IDB4CgovLyBUaGlzIFRFQUwgd2FzIGdlbmVyYXRlZCBieSBURUFMU2NyaXB0IHYwLjEwNi4zCi8vIGh0dHBzOi8vZ2l0aHViLmNvbS9hbGdvcmFuZGZvdW5kYXRpb24vVEVBTFNjcmlwdAoKLy8gVGhpcyBjb250cmFjdCBpcyBjb21wbGlhbnQgd2l0aCBhbmQvb3IgaW1wbGVtZW50cyB0aGUgZm9sbG93aW5nIEFSQ3M6IFsgQVJDNCBdCgovLyBUaGUgZm9sbG93aW5nIHRlbiBsaW5lcyBvZiBURUFMIGhhbmRsZSBpbml0aWFsIHByb2dyYW0gZmxvdwovLyBUaGlzIHBhdHRlcm4gaXMgdXNlZCB0byBtYWtlIGl0IGVhc3kgZm9yIGFueW9uZSB0byBwYXJzZSB0aGUgc3RhcnQgb2YgdGhlIHByb2dyYW0gYW5kIGRldGVybWluZSBpZiBhIHNwZWNpZmljIGFjdGlvbiBpcyBhbGxvd2VkCi8vIEhlcmUsIGFjdGlvbiByZWZlcnMgdG8gdGhlIE9uQ29tcGxldGUgaW4gY29tYmluYXRpb24gd2l0aCB3aGV0aGVyIHRoZSBhcHAgaXMgYmVpbmcgY3JlYXRlZCBvciBjYWxsZWQKLy8gRXZlcnkgcG9zc2libGUgYWN0aW9uIGZvciB0aGlzIGNvbnRyYWN0IGlzIHJlcHJlc2VudGVkIGluIHRoZSBzd2l0Y2ggc3RhdGVtZW50Ci8vIElmIHRoZSBhY3Rpb24gaXMgbm90IGltcGxlbWVudGVkIGluIHRoZSBjb250cmFjdCwgaXRzIHJlc3BlY3RpdmUgYnJhbmNoIHdpbGwgYmUgIipOT1RfSU1QTEVNRU5URUQiIHdoaWNoIGp1c3QgY29udGFpbnMgImVyciIKdHhuIEFwcGxpY2F0aW9uSUQKIQpwdXNoaW50IDYKKgp0eG4gT25Db21wbGV0aW9uCisKc3dpdGNoICpjYWxsX05vT3AgKk5PVF9JTVBMRU1FTlRFRCAqTk9UX0lNUExFTUVOVEVEICpOT1RfSU1QTEVNRU5URUQgKk5PVF9JTVBMRU1FTlRFRCAqTk9UX0lNUExFTUVOVEVEICpjcmVhdGVfTm9PcCAqTk9UX0lNUExFTUVOVEVEICpOT1RfSU1QTEVNRU5URUQgKk5PVF9JTVBMRU1FTlRFRCAqTk9UX0lNUExFTUVOVEVEICpOT1RfSU1QTEVNRU5URUQKCipOT1RfSU1QTEVNRU5URUQ6CgkvLyBUaGUgcmVxdWVzdGVkIGFjdGlvbiBpcyBub3QgaW1wbGVtZW50ZWQgaW4gdGhpcyBjb250cmFjdC4gQXJlIHlvdSB1c2luZyB0aGUgY29ycmVjdCBPbkNvbXBsZXRlPyBEaWQgeW91IHNldCB5b3VyIGFwcCBJRD8KCWVycgoKLy8gY3JlYXRlQXBwbGljYXRpb24oc3RyaW5nLHN0cmluZyx1aW50NjQsdWludDY0LHVpbnQ2NCl2b2lkCiphYmlfcm91dGVfY3JlYXRlQXBwbGljYXRpb246CgkvLyBldmVudENvc3Q6IHVpbnQ2NAoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgNQoJYnRvaQoKCS8vIGVuZFRpbWU6IHVpbnQ2NAoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgNAoJYnRvaQoKCS8vIHN0YXJ0VGltZTogdWludDY0Cgl0eG5hIEFwcGxpY2F0aW9uQXJncyAzCglidG9pCgoJLy8gbG9jYXRpb246IHN0cmluZwoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgoJZXh0cmFjdCAyIDAKCgkvLyBldmVudE5hbWU6IHN0cmluZwoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMQoJZXh0cmFjdCAyIDAKCgkvLyBleGVjdXRlIGNyZWF0ZUFwcGxpY2F0aW9uKHN0cmluZyxzdHJpbmcsdWludDY0LHVpbnQ2NCx1aW50NjQpdm9pZAoJY2FsbHN1YiBjcmVhdGVBcHBsaWNhdGlvbgoJaW50YyAwIC8vIDEKCXJldHVybgoKLy8gY3JlYXRlQXBwbGljYXRpb24oZXZlbnROYW1lOiBzdHJpbmcsIGxvY2F0aW9uOiBzdHJpbmcsIHN0YXJ0VGltZTogdWludDY0LCBlbmRUaW1lOiB1aW50NjQsIGV2ZW50Q29zdDogdWludDY0KTogdm9pZApjcmVhdGVBcHBsaWNhdGlvbjoKCXByb3RvIDUgMAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo1MAoJLy8gdGhpcy5jcmVhdG9yQWRkcmVzcy52YWx1ZSA9IHRoaXMudHhuLnNlbmRlcgoJcHVzaGJ5dGVzIDB4NjM3MjY1NjE3NDZmNzI0MTY0NjQ3MjY1NzM3MyAvLyAiY3JlYXRvckFkZHJlc3MiCgl0eG4gU2VuZGVyCglhcHBfZ2xvYmFsX3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo1MQoJLy8gdGhpcy5ldmVudE5hbWUudmFsdWUgPSBldmVudE5hbWUKCWJ5dGVjIDEgLy8gICJldmVudE5hbWUiCglmcmFtZV9kaWcgLTEgLy8gZXZlbnROYW1lOiBzdHJpbmcKCWR1cAoJbGVuCglpdG9iCglleHRyYWN0IDYgMgoJc3dhcAoJY29uY2F0CglhcHBfZ2xvYmFsX3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo1MgoJLy8gdGhpcy5sb2NhdGlvbi52YWx1ZSA9IGxvY2F0aW9uCglwdXNoYnl0ZXMgMHg2YzZmNjM2MTc0Njk2ZjZlIC8vICJsb2NhdGlvbiIKCWZyYW1lX2RpZyAtMiAvLyBsb2NhdGlvbjogc3RyaW5nCglkdXAKCWxlbgoJaXRvYgoJZXh0cmFjdCA2IDIKCXN3YXAKCWNvbmNhdAoJYXBwX2dsb2JhbF9wdXQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6NTMKCS8vIHRoaXMuZW5kVGltZS52YWx1ZSA9IGVuZFRpbWUKCXB1c2hieXRlcyAweDY1NmU2NDU0Njk2ZDY1IC8vICJlbmRUaW1lIgoJZnJhbWVfZGlnIC00IC8vIGVuZFRpbWU6IHVpbnQ2NAoJYXBwX2dsb2JhbF9wdXQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6NTQKCS8vIHRoaXMucmVnaXN0ZXJlZENvdW50LnZhbHVlID0gMAoJYnl0ZWMgMCAvLyAgInJlZ2lzdGVyZWRDb3VudCIKCWludGMgMSAvLyAwCglhcHBfZ2xvYmFsX3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo1NQoJLy8gdGhpcy5zdGFydFRpbWUudmFsdWUgPSBzdGFydFRpbWUKCXB1c2hieXRlcyAweDczNzQ2MTcyNzQ1NDY5NmQ2NSAvLyAic3RhcnRUaW1lIgoJZnJhbWVfZGlnIC0zIC8vIHN0YXJ0VGltZTogdWludDY0CglhcHBfZ2xvYmFsX3B1dAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo1NgoJLy8gdGhpcy5ldmVudENvc3QudmFsdWUgPSBldmVudENvc3QKCXB1c2hieXRlcyAweDY1NzY2NTZlNzQ0MzZmNzM3NCAvLyAiZXZlbnRDb3N0IgoJZnJhbWVfZGlnIC01IC8vIGV2ZW50Q29zdDogdWludDY0CglhcHBfZ2xvYmFsX3B1dAoJcmV0c3ViCgovLyBjcmVhdGVUaWNrZXRzKHN0cmluZyx1aW50NjQpdm9pZAoqYWJpX3JvdXRlX2NyZWF0ZVRpY2tldHM6CgkvLyB0b3RhbFRpY2tldHM6IHVpbnQ2NAoJdHhuYSBBcHBsaWNhdGlvbkFyZ3MgMgoJYnRvaQoKCS8vIGFzc2V0VXJsOiBzdHJpbmcKCXR4bmEgQXBwbGljYXRpb25BcmdzIDEKCWV4dHJhY3QgMiAwCgoJLy8gZXhlY3V0ZSBjcmVhdGVUaWNrZXRzKHN0cmluZyx1aW50NjQpdm9pZAoJY2FsbHN1YiBjcmVhdGVUaWNrZXRzCglpbnRjIDAgLy8gMQoJcmV0dXJuCgovLyBjcmVhdGVUaWNrZXRzKGFzc2V0VXJsIDogc3RyaW5nLCB0b3RhbFRpY2tldHM6IHVpbnQ2NCk6IHZvaWQKY3JlYXRlVGlja2V0czoKCXByb3RvIDIgMAoKCS8vIFB1c2ggZW1wdHkgYnl0ZXMgYWZ0ZXIgdGhlIGZyYW1lIHBvaW50ZXIgdG8gcmVzZXJ2ZSBzcGFjZSBmb3IgbG9jYWwgdmFyaWFibGVzCglieXRlYyAzIC8vIDB4CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjY3CgkvLyBhc3NlcnQodGhpcy50eG4uc2VuZGVyID09IHRoaXMuYXBwLmNyZWF0b3IsICJPbmx5IFRoZSBFdmVudCBDcmVhdG9yIGNhbiBNaW50IFRpY2tldHMiKQoJdHhuIFNlbmRlcgoJdHhuYSBBcHBsaWNhdGlvbnMgMAoJYXBwX3BhcmFtc19nZXQgQXBwQ3JlYXRvcgoJcG9wCgk9PQoKCS8vIE9ubHkgVGhlIEV2ZW50IENyZWF0b3IgY2FuIE1pbnQgVGlja2V0cwoJYXNzZXJ0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjcwCgkvLyBpdHhuUmVzdWx0ID0gc2VuZEFzc2V0Q3JlYXRpb24oewoJLy8gICAgICAgICAgICAgY29uZmlnQXNzZXRUb3RhbDogdG90YWxUaWNrZXRzLCAgLy8gVXNlIGNvbmZpZ0Fzc2V0VG90YWwgaW5zdGVhZCBvZiB0b3RhbAoJLy8gICAgICAgICAgICAgY29uZmlnQXNzZXREZWNpbWFsczogMCwgICAgICAvLyBVc2UgY29uZmlnQXNzZXREZWNpbWFscyBpbnN0ZWFkIG9mIGRlY2ltYWxzCgkvLyAgICAgICAgICAgICBjb25maWdBc3NldFVuaXROYW1lOiAiVENLVCIsICAvLyBVc2UgY29uZmlnQXNzZXRVbml0TmFtZSBpbnN0ZWFkIG9mIHVuaXROYW1lCgkvLyAgICAgICAgICAgICBjb25maWdBc3NldE5hbWU6IHRoaXMuZXZlbnROYW1lLnZhbHVlLCAvLyBVc2UgY29uZmlnQXNzZXROYW1lIGluc3RlYWQgb2YgYXNzZXROYW1lCgkvLyAgICAgICAgICAgICBjb25maWdBc3NldFVSTCA6IGFzc2V0VXJsLAoJLy8gICAgICAgICAgICAgZmVlOiAzMDAwLAoJLy8KCS8vCgkvLwoJLy8KCS8vICAgICAgIH0pCglpdHhuX2JlZ2luCglwdXNoaW50IDMgLy8gYWNmZwoJaXR4bl9maWVsZCBUeXBlRW51bQoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo3MQoJLy8gY29uZmlnQXNzZXRUb3RhbDogdG90YWxUaWNrZXRzCglmcmFtZV9kaWcgLTIgLy8gdG90YWxUaWNrZXRzOiB1aW50NjQKCWl0eG5fZmllbGQgQ29uZmlnQXNzZXRUb3RhbAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo3MgoJLy8gY29uZmlnQXNzZXREZWNpbWFsczogMAoJaW50YyAxIC8vIDAKCWl0eG5fZmllbGQgQ29uZmlnQXNzZXREZWNpbWFscwoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo3MwoJLy8gY29uZmlnQXNzZXRVbml0TmFtZTogIlRDS1QiCglwdXNoYnl0ZXMgMHg1NDQzNGI1NCAvLyAiVENLVCIKCWl0eG5fZmllbGQgQ29uZmlnQXNzZXRVbml0TmFtZQoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czo3NAoJLy8gY29uZmlnQXNzZXROYW1lOiB0aGlzLmV2ZW50TmFtZS52YWx1ZQoJYnl0ZWMgMSAvLyAgImV2ZW50TmFtZSIKCWFwcF9nbG9iYWxfZ2V0CglleHRyYWN0IDIgMAoJaXR4bl9maWVsZCBDb25maWdBc3NldE5hbWUKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6NzUKCS8vIGNvbmZpZ0Fzc2V0VVJMIDogYXNzZXRVcmwKCWZyYW1lX2RpZyAtMSAvLyBhc3NldFVybDogc3RyaW5nCglpdHhuX2ZpZWxkIENvbmZpZ0Fzc2V0VVJMCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjc2CgkvLyBmZWU6IDMwMDAKCXB1c2hpbnQgMzAwMAoJaXR4bl9maWVsZCBGZWUKCgkvLyBTdWJtaXQgaW5uZXIgdHJhbnNhY3Rpb24KCWl0eG5fc3VibWl0CglpdHhuIENyZWF0ZWRBc3NldElECglmcmFtZV9idXJ5IDAgLy8gaXR4blJlc3VsdDogdWludDY0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjgzCgkvLyB0aGlzLmFzc2V0SUQudmFsdWUgPSBpdHhuUmVzdWx0LmlkCglieXRlYyAyIC8vICAiYXNzZXRJRCIKCWZyYW1lX2RpZyAwIC8vIGl0eG5SZXN1bHQ6IHVpbnQ2NAoJYXBwX2dsb2JhbF9wdXQKCXJldHN1YgoKLy8gcmVnaXN0ZXJFdmVudChzdHJpbmcpdm9pZAoqYWJpX3JvdXRlX3JlZ2lzdGVyRXZlbnQ6CgkvLyBlbWFpbDogc3RyaW5nCgl0eG5hIEFwcGxpY2F0aW9uQXJncyAxCglleHRyYWN0IDIgMAoKCS8vIGV4ZWN1dGUgcmVnaXN0ZXJFdmVudChzdHJpbmcpdm9pZAoJY2FsbHN1YiByZWdpc3RlckV2ZW50CglpbnRjIDAgLy8gMQoJcmV0dXJuCgovLyByZWdpc3RlckV2ZW50KGVtYWlsOiBzdHJpbmcpOiB2b2lkCnJlZ2lzdGVyRXZlbnQ6Cglwcm90byAxIDAKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6OTQKCS8vIGFzc2VydCghdGhpcy5yZWdpc3RlcmVkTWFwKHRoaXMudHhuLnNlbmRlcikuZXhpc3RzLCAnYWxyZWFkeSBjbGFpbWVkJykKCXR4biBTZW5kZXIKCWJveF9sZW4KCXN3YXAKCXBvcAoJIQoKCS8vIGFscmVhZHkgY2xhaW1lZAoJYXNzZXJ0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjk1CgkvLyB0aGlzLnJlZ2lzdGVyZWRDb3VudC52YWx1ZSArPSAxCglieXRlYyAwIC8vICAicmVnaXN0ZXJlZENvdW50IgoJYXBwX2dsb2JhbF9nZXQKCWludGMgMCAvLyAxCgkrCglieXRlYyAwIC8vICAicmVnaXN0ZXJlZENvdW50IgoJc3dhcAoJYXBwX2dsb2JhbF9wdXQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6OTYKCS8vIHRoaXMucmVnaXN0ZXJlZE1hcCh0aGlzLnR4bi5zZW5kZXIpLnZhbHVlID0gZW1haWwKCXR4biBTZW5kZXIKCWR1cAoJYm94X2RlbAoJcG9wCglmcmFtZV9kaWcgLTEgLy8gZW1haWw6IHN0cmluZwoJZHVwCglsZW4KCWl0b2IKCWV4dHJhY3QgNiAyCglzd2FwCgljb25jYXQKCWJveF9wdXQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6MTAxCgkvLyB0aGlzLnNlbmRUaWNrZXRzKDEsdGhpcy50eG4uc2VuZGVyKQoJdHhuIFNlbmRlcgoJaW50YyAwIC8vIDEKCWNhbGxzdWIgc2VuZFRpY2tldHMKCXJldHN1YgoKLy8gd2l0aERyYXdGdW5kcyh1aW50NjQpdm9pZAoqYWJpX3JvdXRlX3dpdGhEcmF3RnVuZHM6CgkvLyBmdW5kczogdWludDY0Cgl0eG5hIEFwcGxpY2F0aW9uQXJncyAxCglidG9pCgoJLy8gZXhlY3V0ZSB3aXRoRHJhd0Z1bmRzKHVpbnQ2NCl2b2lkCgljYWxsc3ViIHdpdGhEcmF3RnVuZHMKCWludGMgMCAvLyAxCglyZXR1cm4KCi8vIHdpdGhEcmF3RnVuZHMoZnVuZHMgOiB1aW50NjQpOiB2b2lkCndpdGhEcmF3RnVuZHM6Cglwcm90byAxIDAKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6MTEyCgkvLyBzZW5kUGF5bWVudCh7YW1vdW50OiBmdW5kcyxub3RlOiAiV2l0aGRyYXduIEZ1bmRzIGZyb20gVGlja2V0IENvbnRyYWN0In0pCglpdHhuX2JlZ2luCglpbnRjIDAgLy8gIHBheQoJaXR4bl9maWVsZCBUeXBlRW51bQoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czoxMTIKCS8vIGFtb3VudDogZnVuZHMKCWZyYW1lX2RpZyAtMSAvLyBmdW5kczogdWludDY0CglpdHhuX2ZpZWxkIEFtb3VudAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czoxMTIKCS8vIG5vdGU6ICJXaXRoZHJhd24gRnVuZHMgZnJvbSBUaWNrZXQgQ29udHJhY3QiCglwdXNoYnl0ZXMgMHg1NzY5NzQ2ODY0NzI2MTc3NmUyMDQ2NzU2ZTY0NzMyMDY2NzI2ZjZkMjA1NDY5NjM2YjY1NzQyMDQzNmY2ZTc0NzI2MTYzNzQgLy8gIldpdGhkcmF3biBGdW5kcyBmcm9tIFRpY2tldCBDb250cmFjdCIKCWl0eG5fZmllbGQgTm90ZQoKCS8vIEZlZSBmaWVsZCBub3Qgc2V0LCBkZWZhdWx0aW5nIHRvIDAKCWludGMgMSAvLyAwCglpdHhuX2ZpZWxkIEZlZQoKCS8vIFN1Ym1pdCBpbm5lciB0cmFuc2FjdGlvbgoJaXR4bl9zdWJtaXQKCXJldHN1YgoKLy8gc2VuZFRpY2tldHMoYW1vdW50VG9TZW5kOiB1aW50NjQsIHJlY2VpdmVyOkFkZHJlc3MpOiB1aW50NjQKLy8KLy8gU2VuZHMgYSBzcGVjaWZpZWQgYW1vdW50IG9mIHRva2VucyBmcm9tIGEgdG9rZW4gZHJvcCB0byB0aGUgZ2l2ZW4gcmVjZWl2ZXIKLy8gYW5kIHVwZGF0ZXMgdGhlIHJlbWFpbmluZyBiYWxhbmNlIG9mIHRoZSBkcm9wLiBJZiB0aGUgZHJvcCBpcyBmdWxseSBjbGFpbWVkLAovLyBpdCBpcyByZW1vdmVkIGZyb20gdGhlIGFjdGl2ZSBkcm9wcy4KLy8KLy8gQHBhcmFtIHt1aW50NjR9IGFtb3VudFRvU2VuZCAtIEluZm9ybWF0aW9uIGFib3V0IHRoZSB0b2tlbiBkcm9wLCBpbmNsdWRpbmcgdGhlIHRva2VuIHR5cGUgYW5kIHJlbWFpbmluZyBiYWxhbmNlLgovLyBAcGFyYW0ge0FkZHJlc3N9IHJlY2VpdmVyIC0gVGhlIGFkZHJlc3Mgb2YgdGhlIHJlY2lwaWVudCB3aG8gd2lsbCByZWNlaXZlIHRoZSB0b2tlbnMuCi8vIEByZXR1cm4ge3VpbnQ2NH0gVGhlIHJlbWFpbmluZyBiYWxhbmNlIG9mIHRva2VucyBpbiB0aGUgdG9rZW4gZHJvcCBhZnRlciB0aGUgdHJhbnNmZXIuCnNlbmRUaWNrZXRzOgoJcHJvdG8gMiAxCgoJLy8gUHVzaCBlbXB0eSBieXRlcyBhZnRlciB0aGUgZnJhbWUgcG9pbnRlciB0byByZXNlcnZlIHNwYWNlIGZvciBsb2NhbCB2YXJpYWJsZXMKCWJ5dGVjIDMgLy8gMHgKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6MTMyCgkvLyBzZW5kQXNzZXRUcmFuc2Zlcih7CgkvLyAgICAgICAgICAgeGZlckFzc2V0OiBBc3NldElELmZyb21VaW50NjQodGhpcy5hc3NldElELnZhbHVlKSwKCS8vICAgICAgICAgICBhc3NldFJlY2VpdmVyOiByZWNlaXZlciwKCS8vICAgICAgICAgICBhc3NldEFtb3VudDogYW1vdW50VG9TZW5kLAoJLy8gICAgICAgfSkKCWl0eG5fYmVnaW4KCXB1c2hpbnQgNCAvLyBheGZlcgoJaXR4bl9maWVsZCBUeXBlRW51bQoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czoxMzMKCS8vIHhmZXJBc3NldDogQXNzZXRJRC5mcm9tVWludDY0KHRoaXMuYXNzZXRJRC52YWx1ZSkKCWJ5dGVjIDIgLy8gICJhc3NldElEIgoJYXBwX2dsb2JhbF9nZXQKCWl0eG5fZmllbGQgWGZlckFzc2V0CgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjEzNAoJLy8gYXNzZXRSZWNlaXZlcjogcmVjZWl2ZXIKCWZyYW1lX2RpZyAtMiAvLyByZWNlaXZlcjogQWRkcmVzcwoJaXR4bl9maWVsZCBBc3NldFJlY2VpdmVyCgoJLy8gY29udHJhY3RzXFRpY2tldC5hbGdvLnRzOjEzNQoJLy8gYXNzZXRBbW91bnQ6IGFtb3VudFRvU2VuZAoJZnJhbWVfZGlnIC0xIC8vIGFtb3VudFRvU2VuZDogdWludDY0CglpdHhuX2ZpZWxkIEFzc2V0QW1vdW50CgoJLy8gRmVlIGZpZWxkIG5vdCBzZXQsIGRlZmF1bHRpbmcgdG8gMAoJaW50YyAxIC8vIDAKCWl0eG5fZmllbGQgRmVlCgoJLy8gU3VibWl0IGlubmVyIHRyYW5zYWN0aW9uCglpdHhuX3N1Ym1pdAoKCS8vIGNvbnRyYWN0c1xUaWNrZXQuYWxnby50czoxMzkKCS8vIHJlbWFpbmluZyA9IHRoaXMudGlja2V0c1JlbWFpbmluZy52YWx1ZSAtIGFtb3VudFRvU2VuZAoJcHVzaGJ5dGVzIDB4NzQ2OTYzNmI2NTc0NzM1MjY1NmQ2MTY5NmU2OTZlNjcgLy8gInRpY2tldHNSZW1haW5pbmciCglhcHBfZ2xvYmFsX2dldAoJZnJhbWVfZGlnIC0xIC8vIGFtb3VudFRvU2VuZDogdWludDY0CgktCglmcmFtZV9idXJ5IDAgLy8gcmVtYWluaW5nOiB1aW50NjQKCgkvLyBjb250cmFjdHNcVGlja2V0LmFsZ28udHM6MTQxCgkvLyByZXR1cm4gcmVtYWluaW5nCglmcmFtZV9kaWcgMCAvLyByZW1haW5pbmc6IHVpbnQ2NAoKCS8vIHNldCB0aGUgc3Vicm91dGluZSByZXR1cm4gdmFsdWUKCWZyYW1lX2J1cnkgMAoJcmV0c3ViCgoqY3JlYXRlX05vT3A6CglwdXNoYnl0ZXMgMHg4MDA3ZjJkYSAvLyBtZXRob2QgImNyZWF0ZUFwcGxpY2F0aW9uKHN0cmluZyxzdHJpbmcsdWludDY0LHVpbnQ2NCx1aW50NjQpdm9pZCIKCXR4bmEgQXBwbGljYXRpb25BcmdzIDAKCW1hdGNoICphYmlfcm91dGVfY3JlYXRlQXBwbGljYXRpb24KCgkvLyB0aGlzIGNvbnRyYWN0IGRvZXMgbm90IGltcGxlbWVudCB0aGUgZ2l2ZW4gQUJJIG1ldGhvZCBmb3IgY3JlYXRlIE5vT3AKCWVycgoKKmNhbGxfTm9PcDoKCXB1c2hieXRlcyAweDAxNmE0NTAwIC8vIG1ldGhvZCAiY3JlYXRlVGlja2V0cyhzdHJpbmcsdWludDY0KXZvaWQiCglwdXNoYnl0ZXMgMHhlM2U3YjMwMyAvLyBtZXRob2QgInJlZ2lzdGVyRXZlbnQoc3RyaW5nKXZvaWQiCglwdXNoYnl0ZXMgMHhiNGRjNTE0MSAvLyBtZXRob2QgIndpdGhEcmF3RnVuZHModWludDY0KXZvaWQiCgl0eG5hIEFwcGxpY2F0aW9uQXJncyAwCgltYXRjaCAqYWJpX3JvdXRlX2NyZWF0ZVRpY2tldHMgKmFiaV9yb3V0ZV9yZWdpc3RlckV2ZW50ICphYmlfcm91dGVfd2l0aERyYXdGdW5kcwoKCS8vIHRoaXMgY29udHJhY3QgZG9lcyBub3QgaW1wbGVtZW50IHRoZSBnaXZlbiBBQkkgbWV0aG9kIGZvciBjYWxsIE5vT3AKCWVycg==","clear":"I3ByYWdtYSB2ZXJzaW9uIDEw"},"byteCode":{"approval":"CiACAQAmBA9yZWdpc3RlcmVkQ291bnQJZXZlbnROYW1lB2Fzc2V0SUQAMRgUgQYLMRkIjQwBhAAAAAAAAAAAAAABdgAAAAAAAAAAAAAANhoFFzYaBBc2GgMXNhoCVwIANhoBVwIAiAACIkOKBQCADmNyZWF0b3JBZGRyZXNzMQBnKYv/SRUWVwYCTFBngAhsb2NhdGlvbov+SRUWVwYCTFBngAdlbmRUaW1li/xnKCNngAlzdGFydFRpbWWL/WeACWV2ZW50Q29zdIv7Z4k2GgIXNhoBVwIAiAACIkOKAgArMQA2MgByB0gSRLGBA7IQi/6yIiOyI4AEVENLVLIlKWRXAgCyJov/sieBuBeyAbO0PIwAKosAZ4k2GgFXAgCIAAIiQ4oBADEAvUxIFEQoZCIIKExnMQBJvEiL/0kVFlcGAkxQvzEAIogAQok2GgEXiAACIkOKAQCxIrIQi/+yCIAkV2l0aGRyYXduIEZ1bmRzIGZyb20gVGlja2V0IENvbnRyYWN0sgUjsgGziYoCASuxgQSyECpkshGL/rIUi/+yEiOyAbOAEHRpY2tldHNSZW1haW5pbmdki/8JjACLAIwAiYAEgAfy2jYaAI4B/n4AgAQBakUAgATj57MDgAS03FFBNhoAjgP+4P8r/14A","clear":"Cg=="},"compilerInfo":{"compiler":"algod","compilerVersion":{"major":3,"minor":27,"patch":0,"commitHash":"f54f0997"}}} as unknown as Arc56Contract
 
 /**
  * A state record containing binary data
@@ -72,25 +72,32 @@ export type TicketArgs = {
    * The object representation of the arguments for each method
    */
   obj: {
-    'createApplication(string,string,uint64,uint64)void': {
+    'createApplication(string,string,uint64,uint64,uint64)void': {
       eventName: string
       location: string
       startTime: bigint | number
       endTime: bigint | number
+      eventCost: bigint | number
     }
     'createTickets(string,uint64)void': {
       assetUrl: string
       totalTickets: bigint | number
     }
-    'registerEvent()void': Record<string, never>
+    'registerEvent(string)void': {
+      email: string
+    }
+    'withDrawFunds(uint64)void': {
+      funds: bigint | number
+    }
   }
   /**
    * The tuple representation of the arguments for each method
    */
   tuple: {
-    'createApplication(string,string,uint64,uint64)void': [eventName: string, location: string, startTime: bigint | number, endTime: bigint | number]
+    'createApplication(string,string,uint64,uint64,uint64)void': [eventName: string, location: string, startTime: bigint | number, endTime: bigint | number, eventCost: bigint | number]
     'createTickets(string,uint64)void': [assetUrl: string, totalTickets: bigint | number]
-    'registerEvent()void': []
+    'registerEvent(string)void': [email: string]
+    'withDrawFunds(uint64)void': [funds: bigint | number]
   }
 }
 
@@ -98,9 +105,10 @@ export type TicketArgs = {
  * The return type for each method
  */
 export type TicketReturns = {
-  'createApplication(string,string,uint64,uint64)void': void
+  'createApplication(string,string,uint64,uint64,uint64)void': void
   'createTickets(string,uint64)void': void
-  'registerEvent()void': void
+  'registerEvent(string)void': void
+  'withDrawFunds(uint64)void': void
 }
 
 /**
@@ -111,20 +119,25 @@ export type TicketTypes = {
    * Maps method signatures / names to their argument and return types.
    */
   methods:
-    & Record<'createApplication(string,string,uint64,uint64)void' | 'createApplication', {
-      argsObj: TicketArgs['obj']['createApplication(string,string,uint64,uint64)void']
-      argsTuple: TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']
-      returns: TicketReturns['createApplication(string,string,uint64,uint64)void']
+    & Record<'createApplication(string,string,uint64,uint64,uint64)void' | 'createApplication', {
+      argsObj: TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void']
+      argsTuple: TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']
+      returns: TicketReturns['createApplication(string,string,uint64,uint64,uint64)void']
     }>
     & Record<'createTickets(string,uint64)void' | 'createTickets', {
       argsObj: TicketArgs['obj']['createTickets(string,uint64)void']
       argsTuple: TicketArgs['tuple']['createTickets(string,uint64)void']
       returns: TicketReturns['createTickets(string,uint64)void']
     }>
-    & Record<'registerEvent()void' | 'registerEvent', {
-      argsObj: TicketArgs['obj']['registerEvent()void']
-      argsTuple: TicketArgs['tuple']['registerEvent()void']
-      returns: TicketReturns['registerEvent()void']
+    & Record<'registerEvent(string)void' | 'registerEvent', {
+      argsObj: TicketArgs['obj']['registerEvent(string)void']
+      argsTuple: TicketArgs['tuple']['registerEvent(string)void']
+      returns: TicketReturns['registerEvent(string)void']
+    }>
+    & Record<'withDrawFunds(uint64)void' | 'withDrawFunds', {
+      argsObj: TicketArgs['obj']['withDrawFunds(uint64)void']
+      argsTuple: TicketArgs['tuple']['withDrawFunds(uint64)void']
+      returns: TicketReturns['withDrawFunds(uint64)void']
     }>
   /**
    * Defines the shape of the state of the application.
@@ -138,6 +151,7 @@ export type TicketTypes = {
         startTime: bigint
         endTime: bigint
         registeredCount: bigint
+        eventCost: bigint
         assetId: bigint
         ticketsRemaining: bigint
       }
@@ -146,7 +160,7 @@ export type TicketTypes = {
     box: {
       keys: {}
       maps: {
-        registeredMap: Map<string, Uint8Array>
+        registeredMap: Map<string, string>
       }
     }
   }
@@ -194,8 +208,8 @@ export type BoxKeysState = TicketTypes['state']['box']['keys']
  * Defines supported create method params for this smart contract
  */
 export type TicketCreateCallParams =
-  | Expand<CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']> & {method: 'createApplication'} & {onComplete?: OnApplicationComplete.NoOpOC} & CreateSchema>
-  | Expand<CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']> & {method: 'createApplication(string,string,uint64,uint64)void'} & {onComplete?: OnApplicationComplete.NoOpOC} & CreateSchema>
+  | Expand<CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']> & {method: 'createApplication'} & {onComplete?: OnApplicationComplete.NoOpOC} & CreateSchema>
+  | Expand<CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']> & {method: 'createApplication(string,string,uint64,uint64,uint64)void'} & {onComplete?: OnApplicationComplete.NoOpOC} & CreateSchema>
 /**
  * Defines arguments required for the deploy method.
  */
@@ -219,23 +233,23 @@ export abstract class TicketParamsFactory {
       _resolveByMethod<TParams extends TicketCreateCallParams & {method: string}>(params: TParams) {
         switch(params.method) {
           case 'createApplication':
-          case 'createApplication(string,string,uint64,uint64)void':
+          case 'createApplication(string,string,uint64,uint64,uint64)void':
             return TicketParamsFactory.create.createApplication(params)
         }
         throw new Error(`Unknown ' + verb + ' method`)
       },
 
       /**
-       * Constructs create ABI call params for the Ticket smart contract using the createApplication(string,string,uint64,uint64)void ABI method
+       * Constructs create ABI call params for the Ticket smart contract using the createApplication(string,string,uint64,uint64,uint64)void ABI method
        *
        * @param params Parameters for the call
        * @returns An `AppClientMethodCallParams` object for the call
        */
-      createApplication(params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']> & AppClientCompilationParams & {onComplete?: OnApplicationComplete.NoOpOC}): AppClientMethodCallParams & AppClientCompilationParams & {onComplete?: OnApplicationComplete.NoOpOC} {
+      createApplication(params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']> & AppClientCompilationParams & {onComplete?: OnApplicationComplete.NoOpOC}): AppClientMethodCallParams & AppClientCompilationParams & {onComplete?: OnApplicationComplete.NoOpOC} {
         return {
           ...params,
-          method: 'createApplication(string,string,uint64,uint64)void' as const,
-          args: Array.isArray(params.args) ? params.args : [params.args.eventName, params.args.location, params.args.startTime, params.args.endTime],
+          method: 'createApplication(string,string,uint64,uint64,uint64)void' as const,
+          args: Array.isArray(params.args) ? params.args : [params.args.eventName, params.args.location, params.args.startTime, params.args.endTime, params.args.eventCost],
         }
       },
     }
@@ -255,16 +269,29 @@ export abstract class TicketParamsFactory {
     }
   }
   /**
-   * Constructs a no op call for the registerEvent()void ABI method
+   * Constructs a no op call for the registerEvent(string)void ABI method
    *
    * @param params Parameters for the call
    * @returns An `AppClientMethodCallParams` object for the call
    */
-  static registerEvent(params: CallParams<TicketArgs['obj']['registerEvent()void'] | TicketArgs['tuple']['registerEvent()void']> & CallOnComplete): AppClientMethodCallParams & CallOnComplete {
+  static registerEvent(params: CallParams<TicketArgs['obj']['registerEvent(string)void'] | TicketArgs['tuple']['registerEvent(string)void']> & CallOnComplete): AppClientMethodCallParams & CallOnComplete {
     return {
       ...params,
-      method: 'registerEvent()void' as const,
-      args: Array.isArray(params.args) ? params.args : [],
+      method: 'registerEvent(string)void' as const,
+      args: Array.isArray(params.args) ? params.args : [params.args.email],
+    }
+  }
+  /**
+   * Constructs a no op call for the withDrawFunds(uint64)void ABI method
+   *
+   * @param params Parameters for the call
+   * @returns An `AppClientMethodCallParams` object for the call
+   */
+  static withDrawFunds(params: CallParams<TicketArgs['obj']['withDrawFunds(uint64)void'] | TicketArgs['tuple']['withDrawFunds(uint64)void']> & CallOnComplete): AppClientMethodCallParams & CallOnComplete {
+    return {
+      ...params,
+      method: 'withDrawFunds(uint64)void' as const,
+      args: Array.isArray(params.args) ? params.args : [params.args.funds],
     }
   }
 }
@@ -355,12 +382,12 @@ export class TicketFactory {
      */
     create: {
       /**
-       * Creates a new instance of the Ticket smart contract using the createApplication(string,string,uint64,uint64)void ABI method.
+       * Creates a new instance of the Ticket smart contract using the createApplication(string,string,uint64,uint64,uint64)void ABI method.
        *
        * @param params The params for the smart contract call
        * @returns The create params
        */
-      createApplication: (params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']> & AppClientCompilationParams & CreateSchema & {onComplete?: OnApplicationComplete.NoOpOC}) => {
+      createApplication: (params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']> & AppClientCompilationParams & CreateSchema & {onComplete?: OnApplicationComplete.NoOpOC}) => {
         return this.appFactory.params.create(TicketParamsFactory.create.createApplication(params))
       },
     },
@@ -376,12 +403,12 @@ export class TicketFactory {
      */
     create: {
       /**
-       * Creates a new instance of the Ticket smart contract using the createApplication(string,string,uint64,uint64)void ABI method.
+       * Creates a new instance of the Ticket smart contract using the createApplication(string,string,uint64,uint64,uint64)void ABI method.
        *
        * @param params The params for the smart contract call
        * @returns The create transaction
        */
-      createApplication: (params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']> & AppClientCompilationParams & CreateSchema & {onComplete?: OnApplicationComplete.NoOpOC}) => {
+      createApplication: (params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']> & AppClientCompilationParams & CreateSchema & {onComplete?: OnApplicationComplete.NoOpOC}) => {
         return this.appFactory.createTransaction.create(TicketParamsFactory.create.createApplication(params))
       },
     },
@@ -397,14 +424,14 @@ export class TicketFactory {
      */
     create: {
       /**
-       * Creates a new instance of the Ticket smart contract using an ABI method call using the createApplication(string,string,uint64,uint64)void ABI method.
+       * Creates a new instance of the Ticket smart contract using an ABI method call using the createApplication(string,string,uint64,uint64,uint64)void ABI method.
        *
        * @param params The params for the smart contract call
        * @returns The create result
        */
-      createApplication: async (params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64)void']> & AppClientCompilationParams & CreateSchema & SendParams & {onComplete?: OnApplicationComplete.NoOpOC}) => {
+      createApplication: async (params: CallParams<TicketArgs['obj']['createApplication(string,string,uint64,uint64,uint64)void'] | TicketArgs['tuple']['createApplication(string,string,uint64,uint64,uint64)void']> & AppClientCompilationParams & CreateSchema & SendParams & {onComplete?: OnApplicationComplete.NoOpOC}) => {
         const result = await this.appFactory.send.create(TicketParamsFactory.create.createApplication(params))
-        return { result: { ...result.result, return: result.result.return as unknown as (undefined | TicketReturns['createApplication(string,string,uint64,uint64)void']) }, appClient: new TicketClient(result.appClient) }
+        return { result: { ...result.result, return: result.result.return as unknown as (undefined | TicketReturns['createApplication(string,string,uint64,uint64,uint64)void']) }, appClient: new TicketClient(result.appClient) }
       },
     },
 
@@ -519,13 +546,23 @@ export class TicketClient {
     },
 
     /**
-     * Makes a call to the Ticket smart contract using the `registerEvent()void` ABI method.
+     * Makes a call to the Ticket smart contract using the `registerEvent(string)void` ABI method.
      *
      * @param params The params for the smart contract call
      * @returns The call params
      */
-    registerEvent: (params: CallParams<TicketArgs['obj']['registerEvent()void'] | TicketArgs['tuple']['registerEvent()void']> & {onComplete?: OnApplicationComplete.NoOpOC} = {args: []}) => {
+    registerEvent: (params: CallParams<TicketArgs['obj']['registerEvent(string)void'] | TicketArgs['tuple']['registerEvent(string)void']> & {onComplete?: OnApplicationComplete.NoOpOC}) => {
       return this.appClient.params.call(TicketParamsFactory.registerEvent(params))
+    },
+
+    /**
+     * Makes a call to the Ticket smart contract using the `withDrawFunds(uint64)void` ABI method.
+     *
+     * @param params The params for the smart contract call
+     * @returns The call params
+     */
+    withDrawFunds: (params: CallParams<TicketArgs['obj']['withDrawFunds(uint64)void'] | TicketArgs['tuple']['withDrawFunds(uint64)void']> & {onComplete?: OnApplicationComplete.NoOpOC}) => {
+      return this.appClient.params.call(TicketParamsFactory.withDrawFunds(params))
     },
 
   }
@@ -555,13 +592,23 @@ export class TicketClient {
     },
 
     /**
-     * Makes a call to the Ticket smart contract using the `registerEvent()void` ABI method.
+     * Makes a call to the Ticket smart contract using the `registerEvent(string)void` ABI method.
      *
      * @param params The params for the smart contract call
      * @returns The call transaction
      */
-    registerEvent: (params: CallParams<TicketArgs['obj']['registerEvent()void'] | TicketArgs['tuple']['registerEvent()void']> & {onComplete?: OnApplicationComplete.NoOpOC} = {args: []}) => {
+    registerEvent: (params: CallParams<TicketArgs['obj']['registerEvent(string)void'] | TicketArgs['tuple']['registerEvent(string)void']> & {onComplete?: OnApplicationComplete.NoOpOC}) => {
       return this.appClient.createTransaction.call(TicketParamsFactory.registerEvent(params))
+    },
+
+    /**
+     * Makes a call to the Ticket smart contract using the `withDrawFunds(uint64)void` ABI method.
+     *
+     * @param params The params for the smart contract call
+     * @returns The call transaction
+     */
+    withDrawFunds: (params: CallParams<TicketArgs['obj']['withDrawFunds(uint64)void'] | TicketArgs['tuple']['withDrawFunds(uint64)void']> & {onComplete?: OnApplicationComplete.NoOpOC}) => {
+      return this.appClient.createTransaction.call(TicketParamsFactory.withDrawFunds(params))
     },
 
   }
@@ -592,14 +639,25 @@ export class TicketClient {
     },
 
     /**
-     * Makes a call to the Ticket smart contract using the `registerEvent()void` ABI method.
+     * Makes a call to the Ticket smart contract using the `registerEvent(string)void` ABI method.
      *
      * @param params The params for the smart contract call
      * @returns The call result
      */
-    registerEvent: async (params: CallParams<TicketArgs['obj']['registerEvent()void'] | TicketArgs['tuple']['registerEvent()void']> & SendParams & {onComplete?: OnApplicationComplete.NoOpOC} = {args: []}) => {
+    registerEvent: async (params: CallParams<TicketArgs['obj']['registerEvent(string)void'] | TicketArgs['tuple']['registerEvent(string)void']> & SendParams & {onComplete?: OnApplicationComplete.NoOpOC}) => {
       const result = await this.appClient.send.call(TicketParamsFactory.registerEvent(params))
-      return {...result, return: result.return as unknown as (undefined | TicketReturns['registerEvent()void'])}
+      return {...result, return: result.return as unknown as (undefined | TicketReturns['registerEvent(string)void'])}
+    },
+
+    /**
+     * Makes a call to the Ticket smart contract using the `withDrawFunds(uint64)void` ABI method.
+     *
+     * @param params The params for the smart contract call
+     * @returns The call result
+     */
+    withDrawFunds: async (params: CallParams<TicketArgs['obj']['withDrawFunds(uint64)void'] | TicketArgs['tuple']['withDrawFunds(uint64)void']> & SendParams & {onComplete?: OnApplicationComplete.NoOpOC}) => {
+      const result = await this.appClient.send.call(TicketParamsFactory.withDrawFunds(params))
+      return {...result, return: result.return as unknown as (undefined | TicketReturns['withDrawFunds(uint64)void'])}
     },
 
   }
@@ -634,6 +692,7 @@ export class TicketClient {
           startTime: result.startTime,
           endTime: result.endTime,
           registeredCount: result.registeredCount,
+          eventCost: result.eventCost,
           assetId: result.assetID,
           ticketsRemaining: result.ticketsRemaining,
         }
@@ -663,6 +722,10 @@ export class TicketClient {
        */
       registeredCount: async (): Promise<bigint | undefined> => { return (await this.appClient.state.global.getValue("registeredCount")) as bigint | undefined },
       /**
+       * Get the current value of the eventCost key in global state
+       */
+      eventCost: async (): Promise<bigint | undefined> => { return (await this.appClient.state.global.getValue("eventCost")) as bigint | undefined },
+      /**
        * Get the current value of the assetID key in global state
        */
       assetId: async (): Promise<bigint | undefined> => { return (await this.appClient.state.global.getValue("assetID")) as bigint | undefined },
@@ -690,11 +753,11 @@ export class TicketClient {
         /**
          * Get all current values of the registeredMap map in box state
          */
-        getMap: async (): Promise<Map<string, Uint8Array>> => { return (await this.appClient.state.box.getMap("registeredMap")) as Map<string, Uint8Array> },
+        getMap: async (): Promise<Map<string, string>> => { return (await this.appClient.state.box.getMap("registeredMap")) as Map<string, string> },
         /**
          * Get a current value of the registeredMap map by key from box state
          */
-        value: async (key: string): Promise<Uint8Array | undefined> => { return await this.appClient.state.box.getMapValue("registeredMap", key) as Uint8Array | undefined },
+        value: async (key: string): Promise<string | undefined> => { return await this.appClient.state.box.getMapValue("registeredMap", key) as string | undefined },
       },
     },
   }
@@ -714,10 +777,18 @@ export class TicketClient {
         return this
       },
       /**
-       * Add a registerEvent()void method call against the Ticket contract
+       * Add a registerEvent(string)void method call against the Ticket contract
        */
-      registerEvent(params: CallParams<TicketArgs['obj']['registerEvent()void'] | TicketArgs['tuple']['registerEvent()void']> & {onComplete?: OnApplicationComplete.NoOpOC}) {
+      registerEvent(params: CallParams<TicketArgs['obj']['registerEvent(string)void'] | TicketArgs['tuple']['registerEvent(string)void']> & {onComplete?: OnApplicationComplete.NoOpOC}) {
         promiseChain = promiseChain.then(async () => composer.addAppCallMethodCall(await client.params.registerEvent(params)))
+        resultMappers.push(undefined)
+        return this
+      },
+      /**
+       * Add a withDrawFunds(uint64)void method call against the Ticket contract
+       */
+      withDrawFunds(params: CallParams<TicketArgs['obj']['withDrawFunds(uint64)void'] | TicketArgs['tuple']['withDrawFunds(uint64)void']> & {onComplete?: OnApplicationComplete.NoOpOC}) {
+        promiseChain = promiseChain.then(async () => composer.addAppCallMethodCall(await client.params.withDrawFunds(params)))
         resultMappers.push(undefined)
         return this
       },
@@ -766,13 +837,22 @@ export type TicketComposer<TReturns extends [...any[]] = []> = {
   createTickets(params?: CallParams<TicketArgs['obj']['createTickets(string,uint64)void'] | TicketArgs['tuple']['createTickets(string,uint64)void']>): TicketComposer<[...TReturns, TicketReturns['createTickets(string,uint64)void'] | undefined]>
 
   /**
-   * Calls the registerEvent()void ABI method.
+   * Calls the registerEvent(string)void ABI method.
    *
    * @param args The arguments for the contract call
    * @param params Any additional parameters for the call
    * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
    */
-  registerEvent(params?: CallParams<TicketArgs['obj']['registerEvent()void'] | TicketArgs['tuple']['registerEvent()void']>): TicketComposer<[...TReturns, TicketReturns['registerEvent()void'] | undefined]>
+  registerEvent(params?: CallParams<TicketArgs['obj']['registerEvent(string)void'] | TicketArgs['tuple']['registerEvent(string)void']>): TicketComposer<[...TReturns, TicketReturns['registerEvent(string)void'] | undefined]>
+
+  /**
+   * Calls the withDrawFunds(uint64)void ABI method.
+   *
+   * @param args The arguments for the contract call
+   * @param params Any additional parameters for the call
+   * @returns The typed transaction composer so you can fluently chain multiple calls or call execute to execute all queued up transactions
+   */
+  withDrawFunds(params?: CallParams<TicketArgs['obj']['withDrawFunds(uint64)void'] | TicketArgs['tuple']['withDrawFunds(uint64)void']>): TicketComposer<[...TReturns, TicketReturns['withDrawFunds(uint64)void'] | undefined]>
 
   /**
    * Makes a clear_state call to an existing instance of the Ticket smart contract.
