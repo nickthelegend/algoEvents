@@ -94,6 +94,11 @@
     pointer-events: none;
     z-index: -1;
   }
+
+  .font-anton {
+    font-family: "Anton", sans-serif;
+  }
+
   /* Gradient button hover effect */
   /* Gradient button hover effect */
 .gradient-hover {

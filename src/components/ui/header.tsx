@@ -44,7 +44,7 @@ export function SiteHeader() {
               alt="Algorand Events Logo"
               className="h-12 w-auto mr-[-5]"
             />
-            <span className="text-[32px] font-bold text-white mb-1">Events</span>
+            <span className="text-[32px] font-bold text-white mb-1" style={{ fontFamily: "'Anton', sans-serif",fontWeight: 400, }}>EVENTS</span>
           </Link>
         </div>
 

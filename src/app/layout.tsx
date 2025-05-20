@@ -14,6 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Anton&family=Audiowide&display=swap" rel="stylesheet" />
+      </head>
       <body className={cn(inter.className, "min-h-screen bg-black text-white antialiased")}>
         <Providers>
           <SiteHeader />
