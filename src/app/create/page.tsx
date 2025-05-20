@@ -16,6 +16,10 @@ import { createClient } from "@supabase/supabase-js"
 import { TicketManagerClient } from "@/contracts/TicketManagerClient"
 import { AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { TicketFactory } from "@/contracts/TicketClient"
+import { OnApplicationComplete } from "algosdk"
+import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount"
+// import { AlgoAmount } from "@algorandfoundation/algokit-utils"
 
 // Initialize Supabase client
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -170,38 +174,65 @@ export default function CreateEventPage() {
           token: "",
         },
       })
-      // Initialize the TicketManagerClient
-      const Caller = new TicketManagerClient({
-        appId: BigInt(739825314),
-        algorand: algorand,
+
+      toast.info("Creating application on the blockchain...", { autoClose: false })
+
+      // Create application using EventFactory
+      const appFactory = new TicketFactory({
         defaultSender: activeAddress,
+        defaultSigner: transactionSigner,
+        algorand,
       })
 
-      toast.info("Creating event on the blockchain...", { autoClose: false })
-
-      // Call the smart contract to create the event with the new EventCost parameter
-      await Caller.send.createEvent({
+      const { result, appClient } = await appFactory.send.create.createApplication({
+        sender: activeAddress,
         signer: transactionSigner,
-        args: {
-          eventConfig: {
-            eventId: BigInt(eventId),
-            eventAppId: BigInt(739823874), // Using the same appId as the client
-            eventCategory: formData.eventMetadata.category,
-            eventImage: ipfsURL,
-            eventCost: BigInt(eventCost), // New parameter
-            maxParticipants: BigInt(maxParticipants),
-            startTime: BigInt(startTime),
-            endTime: BigInt(endTime),
-            eventCreator: activeAddress,
-            eventName: formData.name,
-            location: formData.location,
-            registeredCount: BigInt(0),
-          },
-        },
-        populateAppCallResources: true,
+        onComplete: OnApplicationComplete.NoOpOC,
+        args: [formData.name, formData.location, BigInt(startTime), BigInt(endTime)],
       })
 
-      toast.success("Event created successfully on the blockchain!")
+      // Get application reference
+      const appID = await appClient.appId
+      const appAddress = await appClient.appAddress.toString()
+
+      toast.info(`Application created with ID: ${appID}`, { autoClose: 2000 })
+
+const client = algorand.client.getTypedAppClientById(TicketManagerClient, {
+  appId: BigInt(739825314),
+  defaultSender: activeAddress,
+  defaultSigner: transactionSigner
+});
+
+      await algorand
+  .newGroup()
+  .addAppCallMethodCall(await client.params.createEvent({args: {eventConfig : {
+    eventId: BigInt(eventId),
+    eventAppId: BigInt(appID), // Using the newly created appId
+    eventCategory: formData.eventMetadata.category,
+    eventImage: ipfsURL,
+    eventCost: BigInt(eventCost),
+    maxParticipants: BigInt(maxParticipants),
+    startTime: BigInt(startTime),
+    endTime: BigInt(endTime),
+    eventCreator: activeAddress,
+    eventName: formData.name,
+    location: formData.location,
+    registeredCount: BigInt(0),
+  },
+
+} 
+
+ }
+
+))
+  .addPayment({
+    sender: activeAddress,
+    receiver: appAddress,
+    amount: AlgoAmount.Algo(3),
+    signer: transactionSigner,
+  })
+.send({populateAppCallResources: true });     
+ toast.success("Event created successfully on the blockchain!")
 
       // Redirect to the events page or show success message
       // router.push('/events')
@@ -608,20 +639,32 @@ export default function CreateEventPage() {
                   Continue
                 </Button>
               ) : (
-                <Button
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0"
-                  onClick={createTicketNFTs}
-                  disabled={isCreating || !activeAddress}
-                >
-                  {isCreating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Event...
-                    </>
-                  ) : (
-                    "Create Event & Mint Tickets"
-                  )}
-                </Button>
+                <>
+                  <div className="bg-yellow-900/20 border border-yellow-700/30 rounded-lg p-4 mb-4 max-w-md mx-auto">
+                    <h3 className="font-medium text-yellow-400 flex items-center">
+                      <Clock className="h-4 w-4 mr-2" />
+                      Fee Notice
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-2">
+                      Creating an event will deduct 3 ALGO from your wallet to fund the application and maintain the
+                      minimum balance requirement for IPFS storage.
+                    </p>
+                  </div>
+                  <Button
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0"
+                    onClick={createTicketNFTs}
+                    disabled={isCreating || !activeAddress}
+                  >
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Event...
+                      </>
+                    ) : (
+                      "Create Event & Mint Tickets"
+                    )}
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>
