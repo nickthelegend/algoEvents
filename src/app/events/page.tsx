@@ -1,19 +1,30 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { createClient } from "@supabase/supabase-js"
 import { format } from "date-fns"
 import Link from "next/link"
-import { Calendar, MapPin, Search, Filter, X } from "lucide-react"
+import { Calendar, MapPin, Search, Filter, X, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import Image from "next/image"
+import algosdk from "algosdk"
 
-// Initialize Supabase client
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// Define the EventConfig type
+type EventConfig = {
+  EventID: bigint
+  EventName: string
+  EventCategory: string
+  EventCreator: string
+  EventImage: string
+  MaxParticipants: bigint
+  Location: string
+  StartTime: bigint
+  EndTime: bigint
+  RegisteredCount: bigint
+  EventAppID: bigint
+}
 
 const categories = [
   { id: "all", name: "All Events", color: "bg-primary" },
@@ -39,18 +50,121 @@ export default function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedPriceRange, setSelectedPriceRange] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Function to fetch events from Algorand blockchain
+  async function fetchAlgorandEvents() {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
+      const appId = 739823874 // App ID
+
+      // ABI type with all fields
+      const abiType = algosdk.ABIType.from(
+        "(uint64,string,string,address,string,uint64,string,uint64,uint64,uint64,uint64)",
+      )
+
+      const boxesResp = await indexer.searchForApplicationBoxes(appId).do()
+      console.log("Boxes response:", boxesResp)
+
+      const fetchedEvents = []
+
+      for (const box of boxesResp.boxes) {
+        try {
+          // Decode box.name
+          const nameBuf =
+            typeof box.name === "string"
+              ? Buffer.from(box.name, "base64")
+              : Buffer.from(
+                  (box.name as Uint8Array).buffer,
+                  (box.name as Uint8Array).byteOffset,
+                  (box.name as Uint8Array).byteLength,
+                )
+
+          // Fetch box value
+          const valResp = await indexer
+            .lookupApplicationBoxByIDandName(
+              appId,
+              new Uint8Array(nameBuf.buffer, nameBuf.byteOffset, nameBuf.byteLength),
+            )
+            .do()
+
+          // Normalize to Buffer
+          let buf: Buffer
+          if (typeof valResp.value === "string") {
+            buf = Buffer.from(valResp.value, "base64")
+          } else {
+            const u8 = valResp.value as Uint8Array
+            buf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
+          }
+
+          // ABI Decode
+          const decodedTuple = abiType.decode(buf) as [
+            bigint, // 0: EventID
+            string, // 1: EventName
+            string, // 2: EventCategory
+            string, // 3: EventCreator (address)
+            string, // 4: EventImage
+            bigint, // 5: MaxParticipants
+            string, // 6: Location
+            bigint, // 7: StartTime
+            bigint, // 8: EndTime
+            bigint, // 9: RegisteredCount
+            bigint, // 10: EventAppID
+          ]
+
+          // Map to EventConfig
+          const eventConfig: EventConfig = {
+            EventID: decodedTuple[0],
+            EventName: decodedTuple[1],
+            EventCategory: decodedTuple[2],
+            EventCreator: decodedTuple[3],
+            EventImage: decodedTuple[4],
+            MaxParticipants: decodedTuple[5],
+            Location: decodedTuple[6],
+            StartTime: decodedTuple[7],
+            EndTime: decodedTuple[8],
+            RegisteredCount: decodedTuple[9],
+            EventAppID: decodedTuple[10],
+          }
+
+          // Map to UI format
+          const uiEvent = {
+            event_id: Number(eventConfig.EventID),
+            event_name: eventConfig.EventName,
+            description: "Event on Algorand blockchain", // Default description
+            location: eventConfig.Location,
+            venue: eventConfig.Location,
+            event_date: new Date(Number(eventConfig.StartTime) * 1000).toISOString(),
+            max_tickets: Number(eventConfig.MaxParticipants),
+            ticket_price: 0, // Default price
+            image_url: eventConfig.EventImage,
+            category: eventConfig.EventCategory.toLowerCase(),
+            created_by: eventConfig.EventCreator,
+          }
+
+          fetchedEvents.push(uiEvent)
+        } catch (boxError) {
+          console.error("Error processing box:", boxError)
+        }
+      }
+
+      console.log("Fetched events:", fetchedEvents)
+      setEvents(fetchedEvents)
+      setFilteredEvents(fetchedEvents)
+    } catch (error) {
+      console.error("Error fetching Algorand events:", error)
+      setError("Failed to fetch events from blockchain. Please try again later.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Fetch events
   useEffect(() => {
-    async function fetchEvents() {
-      const { data } = await supabase.from("events").select("*").order("event_date", { ascending: true })
-
-      setEvents(data || [])
-      setFilteredEvents(data || [])
-      setIsLoading(false)
-    }
-
-    fetchEvents()
+    fetchAlgorandEvents()
   }, [])
 
   // Filter events based on search, category, and price range
@@ -90,6 +204,11 @@ export default function EventsPage() {
     setSearchQuery("")
     setSelectedCategory("all")
     setSelectedPriceRange("all")
+  }
+
+  // Refresh events
+  const refreshEvents = () => {
+    fetchAlgorandEvents()
   }
 
   return (
@@ -228,8 +347,15 @@ export default function EventsPage() {
         <div className="max-w-6xl mx-auto">
           {isLoading ? (
             <div className="text-center py-20">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto" />
-              <p className="text-gray-400 mt-4">Loading events...</p>
+              <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-gray-400 mt-4">Loading events from blockchain...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="text-xl text-red-400 mb-4">{error}</p>
+              <Button variant="outline" onClick={refreshEvents}>
+                Try Again
+              </Button>
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-20">
@@ -306,4 +432,3 @@ export default function EventsPage() {
     </div>
   )
 }
-
