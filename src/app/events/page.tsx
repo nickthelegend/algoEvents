@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
 import Link from "next/link"
-import { Calendar, MapPin, Search, Filter, X, Loader2, Coins } from "lucide-react"
+import { Calendar, MapPin, Search, Filter, X, Loader2, Coins, Code, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -52,6 +52,7 @@ export default function EventsPage() {
   const [selectedPriceRange, setSelectedPriceRange] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [debugInfo, setDebugInfo] = useState<any>({})
 
   // Function to fetch events from Algorand blockchain
   async function fetchAlgorandEvents() {
@@ -69,6 +70,18 @@ export default function EventsPage() {
 
       const boxesResp = await indexer.searchForApplicationBoxes(appId).do()
       console.log("Boxes response:", boxesResp)
+
+      // Store debug info
+      setDebugInfo({
+        appId,
+        boxCount: boxesResp.boxes.length,
+        timestamp: new Date().toISOString(),
+      })
+
+      if (!boxesResp.boxes || boxesResp.boxes.length === 0) {
+        setError("No events found in the blockchain. The application may not have any events yet.")
+        return
+      }
 
       const fetchedEvents = []
 
@@ -133,6 +146,8 @@ export default function EventsPage() {
             EventAppID: decodedTuple[11],
           }
 
+          console.log("Decoded event:", eventConfig)
+
           // Map to UI format with ticket_price now using EventCost
           const uiEvent = {
             event_id: Number(eventConfig.EventID),
@@ -146,6 +161,7 @@ export default function EventsPage() {
             image_url: eventConfig.EventImage,
             category: eventConfig.EventCategory.toLowerCase(),
             created_by: eventConfig.EventCreator,
+            app_id: Number(eventConfig.EventAppID), // Include the app ID
           }
 
           fetchedEvents.push(uiEvent)
@@ -155,6 +171,12 @@ export default function EventsPage() {
       }
 
       console.log("Fetched events:", fetchedEvents)
+
+      if (fetchedEvents.length === 0) {
+        setError("No valid events found in the blockchain. There might be an issue with the event data format.")
+        return
+      }
+
       setEvents(fetchedEvents)
       setFilteredEvents(fetchedEvents)
     } catch (error) {
@@ -355,10 +377,27 @@ export default function EventsPage() {
             </div>
           ) : error ? (
             <div className="text-center py-20">
-              <p className="text-xl text-red-400 mb-4">{error}</p>
-              <Button variant="outline" onClick={refreshEvents}>
-                Try Again
-              </Button>
+              <Card className="max-w-md mx-auto bg-gray-800/50 border-gray-700">
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center">
+                    <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+                    <p className="text-xl text-red-400 mb-4">{error}</p>
+                    <Button variant="outline" onClick={refreshEvents} className="mb-6">
+                      Try Again
+                    </Button>
+
+                    {/* Debug Information */}
+                    <div className="mt-4 border border-gray-700 rounded-md p-4 bg-gray-800/50 w-full">
+                      <h3 className="text-sm font-medium text-gray-300 mb-2">Debug Information</h3>
+                      <div className="text-xs text-gray-400 font-mono space-y-1 text-left">
+                        <p>App ID: {debugInfo.appId || "N/A"}</p>
+                        <p>Box Count: {debugInfo.boxCount || "N/A"}</p>
+                        <p>Timestamp: {debugInfo.timestamp || new Date().toISOString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ) : filteredEvents.length === 0 ? (
             <div className="text-center py-20">
@@ -425,6 +464,10 @@ export default function EventsPage() {
                           <div className="flex items-center">
                             <Coins className="w-4 h-4 mr-1.5 text-primary" />
                             <span>{event.ticket_price === 0 ? "Free" : `${event.ticket_price} ALGO`}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Code className="w-4 h-4 mr-1.5 text-primary" />
+                            <span>App ID: {event.app_id}</span>
                           </div>
                         </div>
                       </div>
