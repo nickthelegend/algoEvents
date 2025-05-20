@@ -13,9 +13,10 @@ import { cn } from "@/lib/utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { toast } from "react-toastify"
-import algosdk from "algosdk"
 import { createClient } from "@supabase/supabase-js"
 import { Clock, MapPin } from "lucide-react"
+import { TicketManagerClient } from "@/contracts/TicketManagerClient"
+import { AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client"
 
 // Initialize Supabase client
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -34,15 +35,13 @@ interface EventMetadata {
   requiresApproval: boolean
 }
 
-
-
 function sliceIntoChunks(arr: any[], chunkSize: number) {
-  const res = [];
+  const res = []
   for (let i = 0; i < arr.length; i += chunkSize) {
-    const chunk = arr.slice(i, i + chunkSize);
-    res.push(chunk);
+    const chunk = arr.slice(i, i + chunkSize)
+    res.push(chunk)
   }
-  return res;
+  return res
 }
 export default function CreateEventPage() {
   const { activeAddress, algodClient, transactionSigner } = useWallet()
@@ -120,157 +119,67 @@ export default function CreateEventPage() {
     try {
       setIsCreating(true)
 
-      // Prepare metadata
-      const metadata: EventMetadata = {
-        name: formData.name,
-        description: formData.description,
-        location: formData.location,
-        date: date.toISOString(),
-        image: `ipfs://${ipfsHash}`,
-        maxTickets: Number.parseInt(formData.maxTickets),
-        ticketPrice: Number.parseFloat(formData.ticketPrice),
-        venue: formData.eventMetadata.venue,
-        organizer: formData.eventMetadata.organizer,
-        category: formData.eventMetadata.category,
-        requiresApproval: formData.eventMetadata.requiresApproval,
-      }
+      // Generate a unique event ID (could be timestamp-based or random)
+      const eventId = Date.now()
 
-      const suggestedParams = await algodClient.getTransactionParams().do()
+      // Calculate start and end times based on the selected date
+      const startTime = Math.floor(date.getTime() / 1000)
+      const endTime = startTime + 24 * 60 * 60 // 24 hours later
 
-      // Create multiple NFT creation transactions
-      // Create multiple NFT creation transactions
-      const transactions = []
-      for (let i = 0; i < metadata.maxTickets; i++) {
-          const txn = algosdk.makeAssetCreateTxnWithSuggestedParamsFromObject({
-            sender: activeAddress,
-            total: 1,
-            decimals: 0,
-            assetName: `${formData.name} Ticket #${i + 1}`,
-            unitName: "NFT",
-            assetURL: `ipfs://${ipfsHash}`,
-            manager: activeAddress,
-            reserve: activeAddress,
-            freeze: activeAddress,
-            clawback: activeAddress,
-            defaultFrozen: false,
-            suggestedParams,
-            note: new TextEncoder().encode(
-              JSON.stringify({
-                standard: "arc69",
-                ...metadata,
-                ticketNumber: i + 1,
-              }),
-            ),
-          })
-          transactions.push(txn)
-        } 
-        console.log("transactions: ", transactions);
-        // Assign a group ID to all transactions
-        // algosdk.assignGroupID(transactions)
+      // Format the IPFS URL
+      const ipfsURL = `ipfs://${ipfsHash}`
 
-        // Sign all transactions
-        const signedTxns = await transactionSigner(
-          transactions,
-          transactions.map((_, i) => i),
-        )
-        console.log("signedTxns: ", signedTxns);
-        // Filter out null transactions
-        let signedAssetTransactions;
-
-        signedAssetTransactions = sliceIntoChunks(signedTxns, 1)
-        const nonNullSignedTxns = signedTxns.filter((txn): txn is Uint8Array => txn !== null)
-
-        if (nonNullSignedTxns.length !== signedTxns.length) {
-          throw new Error("Some transactions were not signed properly")
-        }
-
-        // Send transactions in groups of 16 (Algorand's group size limit)
-        const chunkSize = 16
-        const assetIds = [];
-
-for (let i = 0; i < signedAssetTransactions.length; i++) {
-  try {
-    const { txid } = await algodClient.sendRawTransaction(signedAssetTransactions[i]).do();
-    const result = await algosdk.waitForConfirmation(algodClient, txid, 4);
-
-    if (result.hasOwnProperty("assetIndex")) {
-      // The confirmed result returns an assetIndex for the first txn.
-      
-     
-      assetIds.push(Number(result["assetIndex"]));
-    } else if (result.innerTxns) {
-      // If innerTxns are provided, map and convert to numbers.
-      const groupAssetIds = result.innerTxns.map((tx) => Number(tx["assetIndex"])).filter((id) => !isNaN(id));
-      console.log("Group Asset IDs from innerTxns:", groupAssetIds);
-      assetIds.push(...groupAssetIds);
-    } else {
-      toast.error("Could not retrieve asset IDs from confirmation");
-    }
-
-    if (i % 5 === 0) {
-      toast.success(`Transaction ${i + 1} of ${signedAssetTransactions.length} confirmed!`, {
-        autoClose: 1000,
-      });
-    }
-  } catch (err) {
-    console.error(err);
-    toast.error(`Transaction ${i + 1} of ${signedAssetTransactions.length} failed!`, {
-      autoClose: 1000,
-    });
-  }
-
-  await new Promise((resolve) => setTimeout(resolve, 20));
-}
-
-console.log("All Collected Asset IDs:", assetIds);
-
-      // Add this validation before the supabase.from("events").insert call
-      if (metadata.ticketPrice === undefined || isNaN(metadata.ticketPrice)) {
-        toast.error("Please enter a valid ticket price or select Free Event")
-        setIsCreating(false)
-        return
-      }
-
-      // Create event in Supabase
-      const { data: event, error: eventError } = await supabase
-        .from("events")
-        .insert({
-          event_name: formData.name,
-          event_date: date.toISOString(),
-          description: formData.description,
-          location: formData.location,
-          max_tickets: metadata.maxTickets,
-          ticket_price: metadata.ticketPrice,
-          venue: metadata.venue,
-          organizer: metadata.organizer,
-          category: metadata.category,
-          requires_approval: metadata.requiresApproval,
-          image_url: `ipfs://${ipfsHash}`,
-          created_by: activeAddress,
-        })
-        .select()
-        .single()
-
-      if (eventError) throw eventError
-        console.log("Asset ID: " , assetIds);
-      // Create tickets in Supabase
-      const ticketsData = assetIds.map((assetId, index) => ({
-        asset_id: assetId,
-        event_id: event.event_id,
-        metadata: {
-          ticketNumber: index + 1,
-          ...metadata,
+      // Get the maximum number of tickets
+      const maxParticipants = Number.parseInt(formData.maxTickets)
+      const algorand = AlgorandClient.fromConfig({
+        algodConfig: {
+          server: "https://testnet-api.algonode.cloud",
+          port: "",
+          token: "",
         },
-      }))
+        indexerConfig: {
+          server: "https://testnet-api.algonode.cloud",
+          port: "",
+          token: "",
+        },
+      })
+      // Initialize the TicketManagerClient
+      const Caller = new TicketManagerClient({
+        appId: BigInt(739823874),
+        algorand: algorand,
+        defaultSender: activeAddress,
+      })
 
-      const { error: ticketsError } = await supabase.from("tickets").insert(ticketsData)
+      toast.info("Creating event on the blockchain...", { autoClose: false })
 
-      if (ticketsError) throw ticketsError
+      // Call the smart contract to create the event
+      await Caller.send.createEvent({
+        signer: transactionSigner,
+        args: {
+          eventConfig: {
+            eventId: BigInt(eventId),
+            eventAppId: BigInt(739823874), // Using the same appId as the client
+            eventCategory: formData.eventMetadata.category,
+            eventImage: ipfsURL,
+            maxParticipants: BigInt(maxParticipants),
+            startTime: BigInt(startTime),
+            endTime: BigInt(endTime),
+            eventCreator: activeAddress,
+            eventName: formData.name,
+            location: formData.location,
+            registeredCount: BigInt(0),
+          },
+        },
+        populateAppCallResources: true,
+      })
 
-      toast.success("Event created and tickets minted successfully!")
+      toast.success("Event created successfully on the blockchain!")
+
+      // Redirect to the events page or show success message
+      // router.push('/events')
     } catch (error) {
-      console.error("Error creating event and minting tickets:", error)
-      toast.error("Failed to create event and mint tickets")
+      console.error("Error creating event on blockchain:", error)
+      toast.error("Failed to create event on the blockchain")
     } finally {
       setIsCreating(false)
     }
@@ -470,4 +379,3 @@ console.log("All Collected Asset IDs:", assetIds);
     </div>
   )
 }
-
