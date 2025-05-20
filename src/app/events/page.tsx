@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
 import Link from "next/link"
-import { Calendar, MapPin, Search, Filter, X, Loader2 } from "lucide-react"
+import { Calendar, MapPin, Search, Filter, X, Loader2, Coins } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,13 +11,14 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import algosdk from "algosdk"
 
-// Define the EventConfig type
+// Define the EventConfig type with the new EventCost field
 type EventConfig = {
   EventID: bigint
   EventName: string
   EventCategory: string
   EventCreator: string
   EventImage: string
+  EventCost: bigint // New field for event cost
   MaxParticipants: bigint
   Location: string
   StartTime: bigint
@@ -59,11 +60,11 @@ export default function EventsPage() {
       setError(null)
 
       const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-      const appId = 739823874 // App ID
+      const appId = 739825314 // App ID
 
-      // ABI type with all fields
+      // Updated ABI type with all fields including EventCost
       const abiType = algosdk.ABIType.from(
-        "(uint64,string,string,address,string,uint64,string,uint64,uint64,uint64,uint64)",
+        "(uint64,string,string,address,string,uint64,uint64,string,uint64,uint64,uint64,uint64)",
       )
 
       const boxesResp = await indexer.searchForApplicationBoxes(appId).do()
@@ -100,37 +101,39 @@ export default function EventsPage() {
             buf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
           }
 
-          // ABI Decode
+          // ABI Decode with updated tuple structure
           const decodedTuple = abiType.decode(buf) as [
             bigint, // 0: EventID
             string, // 1: EventName
             string, // 2: EventCategory
             string, // 3: EventCreator (address)
             string, // 4: EventImage
-            bigint, // 5: MaxParticipants
-            string, // 6: Location
-            bigint, // 7: StartTime
-            bigint, // 8: EndTime
-            bigint, // 9: RegisteredCount
-            bigint, // 10: EventAppID
+            bigint, // 5: EventCost (new field)
+            bigint, // 6: MaxParticipants
+            string, // 7: Location
+            bigint, // 8: StartTime
+            bigint, // 9: EndTime
+            bigint, // 10: RegisteredCount
+            bigint, // 11: EventAppID
           ]
 
-          // Map to EventConfig
+          // Map to EventConfig with the new EventCost field
           const eventConfig: EventConfig = {
             EventID: decodedTuple[0],
             EventName: decodedTuple[1],
             EventCategory: decodedTuple[2],
             EventCreator: decodedTuple[3],
             EventImage: decodedTuple[4],
-            MaxParticipants: decodedTuple[5],
-            Location: decodedTuple[6],
-            StartTime: decodedTuple[7],
-            EndTime: decodedTuple[8],
-            RegisteredCount: decodedTuple[9],
-            EventAppID: decodedTuple[10],
+            EventCost: decodedTuple[5], // New field
+            MaxParticipants: decodedTuple[6],
+            Location: decodedTuple[7],
+            StartTime: decodedTuple[8],
+            EndTime: decodedTuple[9],
+            RegisteredCount: decodedTuple[10],
+            EventAppID: decodedTuple[11],
           }
 
-          // Map to UI format
+          // Map to UI format with ticket_price now using EventCost
           const uiEvent = {
             event_id: Number(eventConfig.EventID),
             event_name: eventConfig.EventName,
@@ -139,7 +142,7 @@ export default function EventsPage() {
             venue: eventConfig.Location,
             event_date: new Date(Number(eventConfig.StartTime) * 1000).toISOString(),
             max_tickets: Number(eventConfig.MaxParticipants),
-            ticket_price: 0, // Default price
+            ticket_price: Number(eventConfig.EventCost), // Now using EventCost
             image_url: eventConfig.EventImage,
             category: eventConfig.EventCategory.toLowerCase(),
             created_by: eventConfig.EventCreator,
@@ -410,7 +413,7 @@ export default function EventsPage() {
                         <p className="text-gray-400 line-clamp-2 mb-4 text-sm">{event.description}</p>
 
                         {/* Event Details */}
-                        <div className="flex items-center text-sm text-gray-400 gap-4">
+                        <div className="flex flex-wrap items-center text-sm text-gray-400 gap-4">
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1.5 text-primary" />
                             {format(new Date(event.event_date), "MMM d, yyyy")}
@@ -418,6 +421,10 @@ export default function EventsPage() {
                           <div className="flex items-center">
                             <MapPin className="w-4 h-4 mr-1.5 text-primary" />
                             <span className="line-clamp-1">{event.location}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Coins className="w-4 h-4 mr-1.5 text-primary" />
+                            <span>{event.ticket_price === 0 ? "Free" : `${event.ticket_price} ALGO`}</span>
                           </div>
                         </div>
                       </div>

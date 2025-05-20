@@ -154,8 +154,10 @@ export default function CreateEventPage() {
       // Format the IPFS URL
       const ipfsURL = `ipfs://${ipfsHash}`
 
-      // Get the maximum number of tickets
+      // Get the maximum number of tickets and event cost
       const maxParticipants = Number.parseInt(formData.maxTickets)
+      const eventCost = Number.parseInt(formData.ticketPrice) || 0
+
       const algorand = AlgorandClient.fromConfig({
         algodConfig: {
           server: "https://testnet-api.algonode.cloud",
@@ -170,14 +172,14 @@ export default function CreateEventPage() {
       })
       // Initialize the TicketManagerClient
       const Caller = new TicketManagerClient({
-        appId: BigInt(739823874),
+        appId: BigInt(739825314),
         algorand: algorand,
         defaultSender: activeAddress,
       })
 
       toast.info("Creating event on the blockchain...", { autoClose: false })
 
-      // Call the smart contract to create the event
+      // Call the smart contract to create the event with the new EventCost parameter
       await Caller.send.createEvent({
         signer: transactionSigner,
         args: {
@@ -186,6 +188,7 @@ export default function CreateEventPage() {
             eventAppId: BigInt(739823874), // Using the same appId as the client
             eventCategory: formData.eventMetadata.category,
             eventImage: ipfsURL,
+            eventCost: BigInt(eventCost), // New parameter
             maxParticipants: BigInt(maxParticipants),
             startTime: BigInt(startTime),
             endTime: BigInt(endTime),
@@ -498,7 +501,7 @@ export default function CreateEventPage() {
                   </div>
 
                   <div>
-                    <Label className="text-sm text-gray-400 mb-2 block">Ticket Price (ALGO)</Label>
+                    <Label className="text-sm text-gray-400 mb-2 block">Event Cost (ALGO)</Label>
                     <div className="relative">
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">Ⱥ</div>
                       <Input
