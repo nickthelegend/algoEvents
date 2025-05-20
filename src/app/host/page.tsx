@@ -5,15 +5,48 @@ import { useWallet } from "@txnlab/use-wallet-react"
 import { createClient } from "@supabase/supabase-js"
 import { format } from "date-fns"
 import Link from "next/link"
-import { Calendar, MapPin, Users, Ticket, Settings, ArrowRight } from "lucide-react"
+import { Calendar, MapPin, Users, Ticket, Settings, ArrowRight, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Skeleton } from "@/components/ui/skeleton" // Add this import
+import { Skeleton } from "@/components/ui/skeleton"
+import algosdk from "algosdk"
 
 // Initialize Supabase client
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+// Define the EventConfig type with the new EventCost field
+type EventConfig = {
+  EventID: bigint
+  EventName: string
+  EventCategory: string
+  EventCreator: string
+  EventImage: string
+  EventCost: bigint
+  MaxParticipants: bigint
+  Location: string
+  StartTime: bigint
+  EndTime: bigint
+  RegisteredCount: bigint
+  EventAppID: bigint
+}
+
+// UI event type
+type UIEvent = {
+  event_id: number
+  event_name: string
+  description: string
+  location: string
+  venue: string
+  event_date: string
+  max_tickets: number
+  ticket_price: number
+  image_url: string
+  category: string
+  created_by: string
+  app_id: number
+}
 
 function LoadingSkeleton() {
   return (
@@ -102,15 +135,19 @@ function LoadingSkeleton() {
 
 export default function HostPage() {
   const { activeAddress } = useWallet()
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<UIEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userProfile, setUserProfile] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchData() {
       if (!activeAddress) return
 
       try {
+        setIsLoading(true)
+        setError(null)
+
         // Fetch user profile
         const { data: profile } = await supabase.from("users").select("*").eq("wallet_address", activeAddress).single()
 
@@ -132,16 +169,121 @@ export default function HostPage() {
           setUserProfile(profile)
         }
 
-        // Fetch events created by this wallet
-        const { data: userEvents } = await supabase
-          .from("events")
-          .select("*")
-          .eq("created_by", activeAddress)
-          .order("event_date", { ascending: false })
+        // Initialize Algorand Indexer
+        const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
+        const mainAppId = 739825314 // Main contract app ID
 
-        setEvents(userEvents || [])
+        // Get all boxes for the main application
+        const boxesResp = await indexer.searchForApplicationBoxes(mainAppId).do()
+        console.log("Boxes response:", boxesResp)
+
+        if (!boxesResp.boxes || boxesResp.boxes.length === 0) {
+          setError("No events found in the blockchain.")
+          setIsLoading(false)
+          return
+        }
+
+        // Updated ABI type with all fields including EventCost
+        const abiType = algosdk.ABIType.from(
+          "(uint64,string,string,address,string,uint64,uint64,string,uint64,uint64,uint64,uint64)",
+        )
+
+        const fetchedEvents: UIEvent[] = []
+
+        // Process each box to get event data
+        for (const box of boxesResp.boxes) {
+          try {
+            // Decode box.name
+            const nameBuf =
+              typeof box.name === "string"
+                ? Buffer.from(box.name, "base64")
+                : Buffer.from(
+                    (box.name as Uint8Array).buffer,
+                    (box.name as Uint8Array).byteOffset,
+                    (box.name as Uint8Array).byteLength,
+                  )
+
+            // Fetch box value
+            const valResp = await indexer
+              .lookupApplicationBoxByIDandName(
+                mainAppId,
+                new Uint8Array(nameBuf.buffer, nameBuf.byteOffset, nameBuf.byteLength),
+              )
+              .do()
+
+            // Normalize to Buffer
+            let buf: Buffer
+            if (typeof valResp.value === "string") {
+              buf = Buffer.from(valResp.value, "base64")
+            } else {
+              const u8 = valResp.value as Uint8Array
+              buf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
+            }
+
+            // ABI Decode with updated tuple structure
+            const decodedTuple = abiType.decode(buf) as [
+              bigint, // 0: EventID
+              string, // 1: EventName
+              string, // 2: EventCategory
+              string, // 3: EventCreator (address)
+              string, // 4: EventImage
+              bigint, // 5: EventCost
+              bigint, // 6: MaxParticipants
+              string, // 7: Location
+              bigint, // 8: StartTime
+              bigint, // 9: EndTime
+              bigint, // 10: RegisteredCount
+              bigint, // 11: EventAppID
+            ]
+
+            // Map to EventConfig
+            const eventConfig: EventConfig = {
+              EventID: decodedTuple[0],
+              EventName: decodedTuple[1],
+              EventCategory: decodedTuple[2],
+              EventCreator: decodedTuple[3],
+              EventImage: decodedTuple[4],
+              EventCost: decodedTuple[5],
+              MaxParticipants: decodedTuple[6],
+              Location: decodedTuple[7],
+              StartTime: decodedTuple[8],
+              EndTime: decodedTuple[9],
+              RegisteredCount: decodedTuple[10],
+              EventAppID: decodedTuple[11],
+            }
+
+            // Check if this event was created by the current wallet
+            if (eventConfig.EventCreator.toLowerCase() === activeAddress.toLowerCase()) {
+              console.log("Found event created by current wallet:", eventConfig)
+
+              // Map to UI format
+              const uiEvent: UIEvent = {
+                event_id: Number(eventConfig.EventID),
+                event_name: eventConfig.EventName,
+                description: "Event on Algorand blockchain", // Default description
+                location: eventConfig.Location,
+                venue: eventConfig.Location,
+                event_date: new Date(Number(eventConfig.StartTime) * 1000).toISOString(),
+                max_tickets: Number(eventConfig.MaxParticipants),
+                ticket_price: Number(eventConfig.EventCost),
+                image_url: eventConfig.EventImage,
+                category: eventConfig.EventCategory.toLowerCase(),
+                created_by: eventConfig.EventCreator,
+                app_id: Number(eventConfig.EventAppID),
+              }
+
+              fetchedEvents.push(uiEvent)
+            }
+          } catch (boxError) {
+            console.error("Error processing box:", boxError)
+          }
+        }
+
+        console.log("Fetched events created by this wallet:", fetchedEvents)
+        setEvents(fetchedEvents)
       } catch (error) {
         console.error("Error fetching data:", error)
+        setError("Failed to load events from blockchain. Please try again later.")
       } finally {
         setIsLoading(false)
       }
@@ -149,6 +291,79 @@ export default function HostPage() {
 
     fetchData()
   }, [activeAddress])
+
+  // For each app ID, fetch additional details
+  useEffect(() => {
+    async function fetchAppDetails() {
+      if (events.length === 0) return
+
+      try {
+        const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
+        const updatedEvents = [...events]
+        let hasUpdates = false
+
+        for (let i = 0; i < events.length; i++) {
+          const event = events[i]
+
+          if (event.app_id) {
+            try {
+              // Look up application details
+              const appInfo = await indexer.lookupApplications(event.app_id).do()
+
+              if (appInfo.application && appInfo.application.params && appInfo.application.params["global-state"]) {
+                const globalState = appInfo.application.params["global-state"]
+
+                // Look for creatorAddress in global state
+                const creatorEntry = globalState.find((entry: any) => {
+                  // Decode the key
+                  let keyStr: string
+                  if (typeof entry.key === "string") {
+                    keyStr = Buffer.from(entry.key, "base64").toString()
+                  } else {
+                    keyStr = Buffer.from(entry.key).toString()
+                  }
+                  return keyStr === "creatorAddress"
+                })
+
+                if (creatorEntry) {
+                  // Extract creator address
+                  let creatorAddress: string
+                  if (creatorEntry.value.type === 1) {
+                    // bytes
+                    creatorAddress = Buffer.from(creatorEntry.value.bytes, "base64").toString()
+                  } else {
+                    // uint
+                    creatorAddress = creatorEntry.value.uint.toString()
+                  }
+
+                  console.log(`App ${event.app_id} creator address:`, creatorAddress)
+
+                  // Update event if needed
+                  if (creatorAddress && creatorAddress !== event.created_by) {
+                    updatedEvents[i] = {
+                      ...event,
+                      created_by: creatorAddress,
+                    }
+                    hasUpdates = true
+                  }
+                }
+              }
+            } catch (appError) {
+              console.error(`Error fetching details for app ${event.app_id}:`, appError)
+            }
+          }
+        }
+
+        if (hasUpdates) {
+          setEvents(updatedEvents)
+        }
+      } catch (error) {
+        console.error("Error fetching application details:", error)
+      }
+    }
+
+    fetchAppDetails()
+  }, [events])
 
   if (!activeAddress) {
     return (
@@ -172,8 +387,14 @@ export default function HostPage() {
         <div className="max-w-6xl mx-auto">
           {isLoading ? (
             <LoadingSkeleton />
+          ) : error ? (
+            <div className="text-center py-12">
+              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
+              <h3 className="text-xl font-medium mb-2">Error Loading Events</h3>
+              <p className="text-gray-400 mb-6">{error}</p>
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
           ) : (
-            // Rest of your existing JSX remains the same
             <div className="space-y-8">
               {/* Host Profile Section */}
               <div className="grid md:grid-cols-[2fr,1fr] gap-6">
@@ -281,7 +502,7 @@ export default function HostPage() {
 }
 
 // Your existing EventsList component remains the same
-function EventsList({ events }: { events: any[] }) {
+function EventsList({ events }: { events: UIEvent[] }) {
   if (events.length === 0) {
     return (
       <Card className="bg-gray-800/50 border-gray-700">
@@ -355,4 +576,3 @@ function EventsList({ events }: { events: any[] }) {
     </div>
   )
 }
-
