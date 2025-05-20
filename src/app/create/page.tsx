@@ -188,7 +188,7 @@ export default function CreateEventPage() {
         sender: activeAddress,
         signer: transactionSigner,
         onComplete: OnApplicationComplete.NoOpOC,
-        args: [formData.name, formData.location, BigInt(startTime), BigInt(endTime), BigInt(eventCost)],
+        args: [formData.name, formData.location, BigInt(startTime), BigInt(endTime), BigInt(eventCost),BigInt(maxParticipants)],
       })
 
       // Get application reference

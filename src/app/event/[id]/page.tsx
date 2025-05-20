@@ -146,7 +146,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const [userDetailsSubmitted, setUserDetailsSubmitted] = useState(false)
   const [user_id, setUserId] = useState<string | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
-  const [asset_id, setAssetID] = useState<bigint| null>(null)
+  const [asset_id, setAssetID] = useState<number>(0)
 
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -407,7 +407,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
       const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
 
-      const appInfo = await indexer.lookupApplications(739832941).do();
+      const appInfo = await indexer.lookupApplications(appID).do();
         if(!appInfo.application){
           throw error
         }
@@ -431,7 +431,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         if (assetIdEntry) {
           const assetID = assetIdEntry.value.uint ?? assetIdEntry.value.bytes;
           console.log('assetID:', assetID);
-          setAssetID(assetID);
+          setAssetID(Number(assetID));
         } else {
           console.log('assetID not found in global state');
         }
@@ -476,15 +476,17 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       //   .send({populateAppCallResources: true });     
 
       // Create the application transaction
+      console.log(asset_id)
       const txn = algosdk.makeApplicationNoOpTxnFromObject({
         sender: activeAddress,
         appIndex: Number(appID),
         appArgs: [
           algosdk.getMethodByName(METHODS, "registerEvent").getSelector(),
-          algosdk.coerceToBytes(userDetails?.email || ""), // User email
+          algosdk.coerceToBytes(userDetails?.email), // User email
         ],
         suggestedParams: { ...suggestedParams },
         boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAddress).publicKey }],
+        foreignAssets: [BigInt(asset_id)]
       })
       if(!asset_id){
         throw error;
@@ -497,12 +499,16 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         suggestedParams,
       })
       // Sign and send the transaction
-      const signedTxns = await transactionSigner([optInTxn,txn,], [0])
-      const { txid } = await algodClient.sendRawTransaction(signedTxns).do()
+      // 1. Group the transactions
+const txns = [optInTxn, txn];
+algosdk.assignGroupID(txns);
 
-      // Wait for confirmation
-      const result = await algosdk.waitForConfirmation(algodClient, txid, 4)
-      console.log("Transaction confirmed:", result)
+// 2. Sign both transactions
+const signedTxns = await transactionSigner(txns, [0, 1]); // Sign both transactions
+
+// 3. Send the signed group to the network
+const { txid } = await algodClient.sendRawTransaction(signedTxns).do();
+      console.log("Transaction confirmed:", txid)
 
       // Update local state to reflect the new request
       setRequestStatus({ exists: true, status: "pending" })
