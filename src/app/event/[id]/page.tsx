@@ -146,6 +146,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const [userDetailsSubmitted, setUserDetailsSubmitted] = useState(false)
   const [user_id, setUserId] = useState<string | null>(null)
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const [asset_id, setAssetID] = useState<bigint| null>(null)
+
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [debugInfo, setDebugInfo] = useState<any>({})
@@ -402,6 +404,41 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         return
       }
 
+
+      const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
+
+      const appInfo = await indexer.lookupApplications(739832941).do();
+        if(!appInfo.application){
+          throw error
+        }
+        const globalState = appInfo.application.params['globalState'];
+        if(!globalState){
+          throw error
+        }
+        const assetIdEntry = globalState.find((entry) => {
+          // Decode the key:
+          let keyStr: string;
+          if (typeof entry.key === 'string') {
+            // entry.key is base64-encoded string
+            keyStr = Buffer.from(entry.key, 'base64').toString();
+          } else {
+            // entry.key is Uint8Array
+            keyStr = Buffer.from(entry.key).toString();
+          }
+          return keyStr === 'assetID';
+        });
+        
+        if (assetIdEntry) {
+          const assetID = assetIdEntry.value.uint ?? assetIdEntry.value.bytes;
+          console.log('assetID:', assetID);
+          setAssetID(assetID);
+        } else {
+          console.log('assetID not found in global state');
+        }
+
+
+
+
       // Define the ABI method for registerEvent
       const METHODS = [
         new algosdk.ABIMethod({ name: "registerEvent", desc: "", args: [{ type: "string", name: "email", desc: "" }], returns: { type: "void", desc: "" } }),
@@ -449,10 +486,13 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         suggestedParams: { ...suggestedParams },
         boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAddress).publicKey }],
       })
+      if(!asset_id){
+        throw error;
+      }
       const optInTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
         sender: activeAddress,
         receiver: activeAddress,
-        assetIndex: BigInt(739833494),
+        assetIndex: BigInt(asset_id),
         amount: 0,
         suggestedParams,
       })
