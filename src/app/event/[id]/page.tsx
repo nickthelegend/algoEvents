@@ -437,7 +437,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         try {
           console.log("Fetching registered users for app ID:", appID)
           const boxesResp = await indexer.searchForApplicationBoxes(appID).do()
-          console.log("Boxes response for registered users:", boxesResp)
+          console.log("Event app boxes response:", boxesResp)
 
           const users: { address: string; email: string }[] = []
 
@@ -470,32 +470,71 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                 valueBuf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
               }
 
+              // Log raw box value for debugging
+              console.log("Raw box value bytes:", Array.from(valueBuf))
+              console.log("Raw box value hex:", valueBuf.toString("hex"))
+
               // Try to convert the box name to an Algorand address
               // The box name might be the raw public key bytes of the address
               try {
                 // If the name is 32 bytes, it might be a public key
                 if (nameBuf.length === 32) {
                   const addr = algosdk.encodeAddress(new Uint8Array(nameBuf))
-                  const email = valueBuf.toString() // The value should be the email as a string
 
-                  users.push({
-                    address: addr,
-                    email: email,
-                  })
+                  // Use ABI type to decode the email string as requested
+                  try {
+                    const stringAbiType = algosdk.ABIType.from("string")
 
-                  // Check if this is the current user
-                  if (activeAddress && addr === activeAddress) {
-                    setIsUserRegistered(true)
-                    // If the user is registered, update the request status
-                    if (assetId) {
-                      setRequestStatus({
-                        exists: true,
-                        status: "approved",
-                        assetId: Number(assetId),
-                      })
+                    // Decode the buffer containing the encoded email
+                    const email = stringAbiType.decode(valResp.value)
 
-                      // Log that we found the user
-                      console.log("Found current user in registered users:", addr)
+                    console.log("Decoded email using ABI:", valResp.value)
+
+                    
+
+                    users.push({
+                      address: addr,
+                      email: email,
+                    })
+
+                    // Check if this is the current user
+                    if (activeAddress && addr === activeAddress) {
+                      setIsUserRegistered(true)
+                      // If the user is registered, update the request status
+                      if (assetId) {
+                        setRequestStatus({
+                          exists: true,
+                          status: "approved",
+                          assetId: Number(assetId),
+                        })
+
+                        // Log that we found the user
+                        console.log("Found current user in registered users:", addr)
+                      }
+                    }
+                  } catch (abiError) {
+                    console.error("Error decoding email using ABI:", abiError)
+
+                    // Fallback to simple toString if ABI decoding fails
+                    const email = valueBuf.toString()
+                    console.log("Fallback email using toString:", email)
+
+                    users.push({
+                      address: addr,
+                      email: email,
+                    })
+
+                    // Check if this is the current user (same as above)
+                    if (activeAddress && addr === activeAddress) {
+                      setIsUserRegistered(true)
+                      if (assetId) {
+                        setRequestStatus({
+                          exists: true,
+                          status: "approved",
+                          assetId: Number(assetId),
+                        })
+                        console.log("Found current user in registered users (fallback):", addr)
+                      }
                     }
                   }
                 } else {
