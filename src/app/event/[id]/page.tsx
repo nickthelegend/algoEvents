@@ -140,6 +140,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const [userDetailsSubmitted, setUserDetailsSubmitted] = useState(false)
   const [qrCode, setQrCode] = useState<string | null>(null)
   const [assetId, setAssetId] = useState<number | null>(null)
+  const [registeredCount, setRegisteredCount] = useState<number | null>(null)
 
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -269,6 +270,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
               // Get count of available tickets (max - registered)
               const availableCount = Number(eventConfig.MaxParticipants) - Number(eventConfig.RegisteredCount)
               setAvailableTickets(Math.max(0, availableCount))
+              setRegisteredCount(Number(eventConfig.RegisteredCount))
 
               // Fetch the asset ID for this event's app
               try {
@@ -345,16 +347,16 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     fetchData()
   }, [resolvedParams.id, activeAddress, algodClient])
 
-  // Fetch asset ID separately when the event app ID is available
+  // Fetch asset ID and registered count separately when the event app ID is available
   useEffect(() => {
-    async function fetchAssetId() {
+    async function fetchAppData() {
       if (!blockchainEvent || !blockchainEvent.EventAppID) return
 
       try {
         const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
         const appID = Number(blockchainEvent.EventAppID)
 
-        console.log("Fetching asset ID for app ID:", appID)
+        console.log("Fetching app data for app ID:", appID)
 
         const appInfo = await indexer.lookupApplications(appID).do()
 
@@ -373,6 +375,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
         console.log("Global state:", globalState)
 
+        // Find asset ID
         const assetIdEntry = globalState.find((entry: any) => {
           let keyStr: string
           if (typeof entry.key === "string") {
@@ -396,12 +399,43 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         } else {
           console.error("assetID not found in global state")
         }
+
+        // Find registered count
+        const registeredCountEntry = globalState.find((entry: any) => {
+          let keyStr: string
+          if (typeof entry.key === "string") {
+            keyStr = Buffer.from(entry.key, "base64").toString()
+          } else {
+            keyStr = Buffer.from(entry.key).toString()
+          }
+          return keyStr === "registeredCount" || keyStr === "RegisteredCount"
+        })
+
+        if (registeredCountEntry) {
+          // Try both uint and bytes formats
+          const registeredCountValue =
+            registeredCountEntry.value.uint ||
+            (registeredCountEntry.value.bytes
+              ? Number.parseInt(Buffer.from(registeredCountEntry.value.bytes, "base64").toString())
+              : null)
+
+          console.log("Found registeredCount in global state:", registeredCountValue)
+          setRegisteredCount(Number(registeredCountValue))
+
+          // Update available tickets based on the registered count from global state
+          if (blockchainEvent && blockchainEvent.MaxParticipants) {
+            const availableCount = Number(blockchainEvent.MaxParticipants) - Number(registeredCountValue)
+            setAvailableTickets(Math.max(0, availableCount))
+          }
+        } else {
+          console.log("registeredCount not found in global state, using value from event config")
+        }
       } catch (error) {
-        console.error("Error fetching asset ID:", error)
+        console.error("Error fetching app data:", error)
       }
     }
 
-    fetchAssetId()
+    fetchAppData()
   }, [blockchainEvent])
 
   useEffect(() => {
@@ -463,8 +497,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       const appID = event.app_id || blockchainEvent?.EventAppID
 
       if (!appID) {
-        toast.error("Invalid application ID")
-        return
+        throw new Error("Invalid application ID")
       }
 
       // Check if we have the asset ID
@@ -617,15 +650,28 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       console.log("Transaction confirmed:", txid)
 
       // Update local state to reflect the new request
-      setRequestStatus({ exists: true, status: "pending", assetId: assetId })
-      setAvailableTickets((prev) => Math.max(0, prev - 1))
+      setRequestStatus({ exists: true, status: "approved", assetId: assetId })
 
-      toast.success("Ticket request submitted successfully!")
+      // Update registered count and available tickets
+      if (registeredCount !== null) {
+        const newRegisteredCount = registeredCount + 1
+        setRegisteredCount(newRegisteredCount)
+
+        if (blockchainEvent && blockchainEvent.MaxParticipants) {
+          const newAvailableTickets = Number(blockchainEvent.MaxParticipants) - newRegisteredCount
+          setAvailableTickets(Math.max(0, newAvailableTickets))
+        }
+      } else {
+        // Fallback if we don't have registered count
+        setAvailableTickets((prev) => Math.max(0, prev - 1))
+      }
+
+      toast.success("Ticket purchased successfully!")
       router.refresh()
     } catch (error) {
       console.error("Error purchasing ticket:", error)
       toast.error(
-        `Failed to purchase ticket: ${error instanceof Error ? error.message : String(error || "Unknown error")}`,
+        `Error purchasing ticket: ${error instanceof Error ? error.message : String(error || "Unknown error")}`,
       )
     } finally {
       setIsPurchasing(false)
@@ -633,7 +679,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   }
 
   // Replace the handlePurchaseTicket function with this updated version
-  const handlePurchaseTicket = async () => {
+  const handlePurchaseTicket = () => {
     if (!activeAddress || !event || !algodClient || !transactionSigner) {
       toast.error("Please connect your wallet first")
       return
@@ -654,7 +700,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     } catch (error) {
       console.error("Error purchasing ticket:", error)
       toast.error(
-        `Failed to purchase ticket: ${error instanceof Error ? error.message : String(error || "Unknown error")}`,
+        `Error purchasing ticket: ${error instanceof Error ? error.message : String(error || "Unknown error")}`,
       )
     } finally {
       setIsPurchasing(false)
@@ -758,6 +804,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                     <p>Box Count: {debugInfo.boxCount || "N/A"}</p>
                     <p>Timestamp: {debugInfo.timestamp || new Date().toISOString()}</p>
                     <p>Asset ID: {assetId || "Not found"}</p>
+                    <p>Registered Count: {registeredCount || "Not found"}</p>
                   </div>
                 </div>
               </div>
@@ -894,7 +941,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                         <div className="flex justify-between">
                           <span className="text-gray-400">Registered:</span>
                           <span className="font-mono">
-                            {Number(blockchainEvent.RegisteredCount)} / {Number(blockchainEvent.MaxParticipants)}
+                            {registeredCount !== null ? registeredCount : Number(blockchainEvent.RegisteredCount)} /{" "}
+                            {Number(blockchainEvent.MaxParticipants)}
                           </span>
                         </div>
                         <div className="flex justify-between">
