@@ -145,6 +145,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [debugInfo, setDebugInfo] = useState<any>({})
+  const [registeredUsers, setRegisteredUsers] = useState<{ address: string; email: string }[]>([])
+  const [isUserRegistered, setIsUserRegistered] = useState(false)
   // Add userDetails state to store email from dialog
   const [userDetails, setUserDetails] = useState<{ email: string; firstName: string; lastName: string } | null>(null)
 
@@ -375,7 +377,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
         console.log("Global state:", globalState)
 
-        // Find asset ID
+        // Find asset ID - only look for the exact key "assetID"
         const assetIdEntry = globalState.find((entry: any) => {
           let keyStr: string
           if (typeof entry.key === "string") {
@@ -430,13 +432,95 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
         } else {
           console.log("registeredCount not found in global state, using value from event config")
         }
+
+        // Fetch registered users from boxes
+        try {
+          console.log("Fetching registered users for app ID:", appID)
+          const boxesResp = await indexer.searchForApplicationBoxes(appID).do()
+          console.log("Boxes response for registered users:", boxesResp)
+
+          const users: { address: string; email: string }[] = []
+
+          for (const box of boxesResp.boxes) {
+            try {
+              // Decode box.name - this contains the user's address but not as an ABI tuple
+              const nameBuf =
+                typeof box.name === "string"
+                  ? Buffer.from(box.name, "base64")
+                  : Buffer.from(
+                      (box.name as Uint8Array).buffer,
+                      (box.name as Uint8Array).byteOffset,
+                      (box.name as Uint8Array).byteLength,
+                    )
+
+              // Fetch box value
+              const valResp = await indexer
+                .lookupApplicationBoxByIDandName(
+                  appID,
+                  new Uint8Array(nameBuf.buffer, nameBuf.byteOffset, nameBuf.byteLength),
+                )
+                .do()
+
+              // Normalize to Buffer
+              let valueBuf: Buffer
+              if (typeof valResp.value === "string") {
+                valueBuf = Buffer.from(valResp.value, "base64")
+              } else {
+                const u8 = valResp.value as Uint8Array
+                valueBuf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
+              }
+
+              // Try to convert the box name to an Algorand address
+              // The box name might be the raw public key bytes of the address
+              try {
+                // If the name is 32 bytes, it might be a public key
+                if (nameBuf.length === 32) {
+                  const addr = algosdk.encodeAddress(new Uint8Array(nameBuf))
+                  const email = valueBuf.toString() // The value should be the email as a string
+
+                  users.push({
+                    address: addr,
+                    email: email,
+                  })
+
+                  // Check if this is the current user
+                  if (activeAddress && addr === activeAddress) {
+                    setIsUserRegistered(true)
+                    // If the user is registered, update the request status
+                    if (assetId) {
+                      setRequestStatus({
+                        exists: true,
+                        status: "approved",
+                        assetId: Number(assetId),
+                      })
+                    }
+                  }
+                } else {
+                  console.log("Box name is not 32 bytes, might not be an address:", nameBuf.length)
+                  // Try to interpret the box name and value as strings for debugging
+                  console.log("Box name as string:", nameBuf.toString())
+                  console.log("Box value as string:", valueBuf.toString())
+                }
+              } catch (decodeError) {
+                console.error("Error processing box name as address:", decodeError)
+              }
+            } catch (boxError) {
+              console.error("Error processing box for registered user:", boxError)
+            }
+          }
+
+          console.log("Registered users:", users)
+          setRegisteredUsers(users)
+        } catch (boxesError) {
+          console.error("Error fetching boxes for registered users:", boxesError)
+        }
       } catch (error) {
         console.error("Error fetching app data:", error)
       }
     }
 
     fetchAppData()
-  }, [blockchainEvent])
+  }, [blockchainEvent, activeAddress])
 
   useEffect(() => {
     const generateQR = async () => {
@@ -544,42 +628,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
           return keyStr === "assetID"
         })
 
-        if (!assetIdEntry) {
-          // Try alternative key formats
-          const alternativeKeys = ["assetId", "asset_id", "asset-id", "AssetID"]
-          for (const altKey of alternativeKeys) {
-            const altEntry = globalState.find((entry: any) => {
-              let keyStr: string
-              if (typeof entry.key === "string") {
-                keyStr = Buffer.from(entry.key, "base64").toString()
-              } else {
-                keyStr = Buffer.from(entry.key).toString()
-              }
-              return keyStr === altKey
-            })
-
-            if (altEntry) {
-              console.log(`Found asset ID with alternative key: ${altKey}`)
-              const foundAssetId =
-                altEntry.value.uint ||
-                (altEntry.value.bytes ? Number.parseInt(Buffer.from(altEntry.value.bytes, "base64").toString()) : null)
-
-              if (foundAssetId) {
-                setAssetId(Number(foundAssetId))
-                console.log(`Set asset ID to: ${foundAssetId}`)
-                break
-              }
-            }
-          }
-
-          // If we still don't have an asset ID, try a hardcoded value as a last resort
-          if (!assetId) {
-            // This is a fallback for testing - in production you'd want to handle this error properly
-            console.warn("Using hardcoded asset ID as fallback")
-            const fallbackAssetId = 739833494 // Replace with your known asset ID if available
-            setAssetId(fallbackAssetId)
-          }
-        } else {
+        if (assetIdEntry) {
           const foundAssetId =
             assetIdEntry.value.uint ||
             (assetIdEntry.value.bytes
@@ -592,6 +641,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
           } else {
             throw new Error("Asset ID value not found in global state")
           }
+        } else {
+          throw new Error("Asset ID not found in global state. Please ensure the event is properly configured.")
         }
       }
 
@@ -725,7 +776,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       )
     }
 
-    if (requestStatus.exists) {
+    if (requestStatus.exists || isUserRegistered) {
       return (
         <Card className="border-dashed">
           <CardContent className="pt-6">
@@ -735,7 +786,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                   <Clock4 className="h-8 w-8 mb-2 mx-auto text-yellow-500" />
                   <p className="text-sm text-gray-400 mb-4">Your ticket request is pending approval</p>
                 </>
-              ) : requestStatus.status === "approved" ? (
+              ) : requestStatus.status === "approved" || isUserRegistered ? (
                 <div className="mt-4">
                   <p className="text-sm text-gray-400 mb-2 text-center">Your Ticket QR Code</p>
                   {isGeneratingQR ? (
@@ -953,6 +1004,53 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                           <span className="text-gray-400">Image URL:</span>
                           <span className="font-mono text-xs truncate max-w-[200px]">{blockchainEvent.EventImage}</span>
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {blockchainEvent && (
+                  <Card className="bg-gray-800/50 border-gray-700">
+                    <CardHeader>
+                      <CardTitle>Registered Attendees</CardTitle>
+                      <CardDescription>
+                        {registeredUsers.length} out of {Number(blockchainEvent.MaxParticipants)} spots filled
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {registeredUsers.length > 0 ? (
+                          <div className="max-h-[300px] overflow-y-auto space-y-2">
+                            {registeredUsers.map((user, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-2 rounded-md bg-gray-700/30"
+                              >
+                                <div className="flex items-center">
+                                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-3">
+                                    {user.email.charAt(0).toUpperCase()}
+                                  </div>
+                                  <div className="overflow-hidden">
+                                    <p className="text-sm text-gray-300 truncate">{user.email}</p>
+                                    <p className="text-xs text-gray-400 font-mono truncate">
+                                      {user.address.substring(0, 8)}...{user.address.substring(user.address.length - 8)}
+                                    </p>
+                                  </div>
+                                </div>
+                                {user.address === activeAddress && (
+                                  <Badge
+                                    variant="outline"
+                                    className="ml-2 bg-green-900/20 text-green-400 border-green-800"
+                                  >
+                                    You
+                                  </Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-400 text-center py-4">No attendees registered yet</p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
