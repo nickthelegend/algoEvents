@@ -493,6 +493,9 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                         status: "approved",
                         assetId: Number(assetId),
                       })
+
+                      // Log that we found the user
+                      console.log("Found current user in registered users:", addr)
                     }
                   }
                 } else {
@@ -522,26 +525,37 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     fetchAppData()
   }, [blockchainEvent, activeAddress])
 
+  // Update the useEffect for QR code generation to also check isUserRegistered
+  // Replace the existing QR code generation useEffect with this updated version:
+
   useEffect(() => {
     const generateQR = async () => {
-      if (requestStatus.status === "approved" && event && activeAddress && requestStatus.assetId) {
+      // Check if user is registered either through requestStatus or isUserRegistered flag
+      if ((requestStatus.status === "approved" || isUserRegistered) && event && activeAddress && assetId) {
         setIsGeneratingQR(true)
         try {
           console.log("Generating QR code with:", {
-            assetId: requestStatus.assetId,
+            assetId: assetId,
             userAddress: activeAddress,
             eventId: event.event_id,
           })
 
           const ticketData = {
-            assetId: requestStatus.assetId,
+            assetId: assetId,
             userAddress: activeAddress,
             eventId: event.event_id,
             timestamp: new Date().toISOString(),
             eventName: event.event_name,
           }
 
-          const signature = await signPayload(ticketData, process.env.NEXT_PUBLIC_TICKET_SIGNING_KEY || "")
+          // Make sure we have the signing key
+          const signingKey = process.env.NEXT_PUBLIC_TICKET_SIGNING_KEY
+          if (!signingKey) {
+            console.error("Missing NEXT_PUBLIC_TICKET_SIGNING_KEY environment variable")
+            throw new Error("Missing ticket signing key")
+          }
+
+          const signature = await signPayload(ticketData, signingKey)
           const qrPayload: QRPayload = {
             payload: ticketData,
             signature,
@@ -549,10 +563,15 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
           const qrDataUrl = await generateQRCodeDataURL(JSON.stringify(qrPayload))
           console.log("QR code generated successfully:", qrDataUrl ? "success" : "failed")
+
+          if (!qrDataUrl) {
+            throw new Error("QR code generation returned empty result")
+          }
+
           setQrCode(qrDataUrl)
         } catch (error) {
           console.error("Error generating QR code:", error)
-          toast.error("Failed to generate ticket QR code")
+          toast.error(`Failed to generate ticket QR code: ${error instanceof Error ? error.message : String(error)}`)
         } finally {
           setIsGeneratingQR(false)
         }
@@ -560,7 +579,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     }
 
     generateQR()
-  }, [requestStatus.status, requestStatus.assetId, event, activeAddress])
+  }, [requestStatus.status, assetId, event, activeAddress, isUserRegistered])
 
   // Update the handleUserDetailsSubmit function
   const handleUserDetailsSubmit = async (details: { email: string; firstName: string; lastName: string }) => {
@@ -762,6 +781,9 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     return <EventSkeleton />
   }
 
+  // Update the renderTicketActionContent function to properly handle isUserRegistered
+  // Replace the existing renderTicketActionContent function with this updated version:
+
   const renderTicketActionContent = () => {
     if (!activeAddress) {
       return (
@@ -776,6 +798,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
       )
     }
 
+    // Check if user is registered either through requestStatus or isUserRegistered flag
     if (requestStatus.exists || isUserRegistered) {
       return (
         <Card className="border-dashed">
@@ -800,7 +823,22 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
                       className="w-full max-w-[300px] mx-auto rounded-lg"
                     />
                   ) : (
-                    <p className="text-sm text-red-400 text-center">Failed to generate QR code</p>
+                    <div className="text-center">
+                      <p className="text-sm text-red-400 mb-2">Failed to generate QR code</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // Force regenerate QR code
+                          setQrCode(null)
+                          setIsGeneratingQR(true)
+                          // This will trigger the useEffect
+                        }}
+                      >
+                        <Loader2 className="w-4 h-4 mr-2" />
+                        Retry
+                      </Button>
+                    </div>
                   )}
                 </div>
               ) : (
