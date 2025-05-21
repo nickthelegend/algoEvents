@@ -24,7 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "react-toastify"
-import algosdk from "algosdk"
+import algosdk, { ABIType } from "algosdk"
 import { type QRPayload, generateQRCodeDataURL, signPayload } from "@/lib/qr-utils"
 import { UserDetailsDialog } from "@/components/user-details-dialog"
 
@@ -732,8 +732,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
               "registerEvent",
             )
             .getSelector(),
-          algosdk.coerceToBytes(details.email), // User email
-        ],
+            new algosdk.ABIStringType().encode(details.email)
+                  ],
         suggestedParams: { ...suggestedParams },
         boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAddress).publicKey }],
         foreignAssets: [assetId], // Use the asset ID
