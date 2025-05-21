@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
 import { format } from "date-fns"
 import Link from "next/link"
 import {
@@ -15,14 +14,9 @@ import {
   Mail,
   Download,
   QrCode,
-  MessageSquare,
-  Bell,
   Clock,
   ArrowLeft,
-  CheckCircle2,
   XCircle,
-  Check,
-  X,
   MoreHorizontal,
   CheckSquare,
   Square,
@@ -31,6 +25,8 @@ import {
   AlertCircle,
   Code,
   Ticket,
+  Eye,
+  Send,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -39,13 +35,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -62,7 +52,7 @@ import { useWallet } from "@txnlab/use-wallet-react"
 import algosdk from "algosdk"
 
 // Initialize Supabase client
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+// const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 // Define the EventConfig type with the new EventCost field
 type EventConfig = {
@@ -95,6 +85,20 @@ type UIEvent = {
   created_by: string
   app_id: number
   registered_count: number
+}
+
+// Registered user type
+type RegisteredUser = {
+  walletAddress: string
+  email: string
+  registrationTime?: string
+}
+
+// Email template type
+type EmailTemplate = {
+  name: string
+  subject: string
+  content: string
 }
 
 type Request = {
@@ -238,25 +242,76 @@ function EventManageSkeleton() {
 
 export default function EventManagePage({ params }: { params: { eventId: string } }) {
   const router = useRouter()
-  const { activeAddress, algodClient, transactionSigner } = useWallet()
+  const { activeAddress, algodClient } = useWallet()
 
   const [event, setEvent] = useState<UIEvent | null>(null)
-  const [requests, setRequests] = useState<Request[]>([])
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedRequests, setSelectedRequests] = useState<number[]>([])
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "approved" | "rejected">("all")
-  const [adminNotesDialog, setAdminNotesDialog] = useState<{
-    isOpen: boolean
-    requestId: number | null
-    notes: string
-  }>({
-    isOpen: false,
-    requestId: null,
-    notes: "",
-  })
+  const [filterStatus, setFilterStatus] = useState<"all" | "email" | "no-email">("all")
   const [error, setError] = useState<string | null>(null)
   const [isProcessingBulkAction, setIsProcessingBulkAction] = useState(false)
+
+  // Email composition state
+  const [emailDialog, setEmailDialog] = useState<{
+    isOpen: boolean
+    subject: string
+    content: string
+    previewMode: boolean
+  }>({
+    isOpen: false,
+    subject: "",
+    content: "",
+    previewMode: false,
+  })
+
+  // Email templates
+  const emailTemplates: EmailTemplate[] = [
+    {
+      name: "Event Reminder",
+      subject: "Reminder: {{event_name}} is Coming Up!",
+      content: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6366f1;">Reminder: {{event_name}} is Coming Up!</h2>
+          <p>Hello,</p>
+          <p>This is a friendly reminder that <strong>{{event_name}}</strong> is coming up soon!</p>
+          <p><strong>Date:</strong> {{event_date}}</p>
+          <p><strong>Location:</strong> {{event_location}}</p>
+          <p>We're looking forward to seeing you there. If you have any questions, please don't hesitate to reach out.</p>
+          <p>Best regards,<br>The Event Team</p>
+        </div>
+      `,
+    },
+    {
+      name: "Event Update",
+      subject: "Important Update for {{event_name}}",
+      content: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6366f1;">Important Update for {{event_name}}</h2>
+          <p>Hello,</p>
+          <p>We have an important update regarding <strong>{{event_name}}</strong>.</p>
+          <p>[Insert your update details here]</p>
+          <p>If you have any questions, please don't hesitate to contact us.</p>
+          <p>Best regards,<br>The Event Team</p>
+        </div>
+      `,
+    },
+    {
+      name: "Thank You",
+      subject: "Thank You for Attending {{event_name}}",
+      content: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6366f1;">Thank You for Attending {{event_name}}</h2>
+          <p>Hello,</p>
+          <p>Thank you for attending <strong>{{event_name}}</strong>! We hope you had a great time.</p>
+          <p>We would love to hear your feedback. Please take a moment to share your thoughts with us.</p>
+          <p>We look forward to seeing you at future events!</p>
+          <p>Best regards,<br>The Event Team</p>
+        </div>
+      `,
+    },
+  ]
 
   useEffect(() => {
     async function fetchData() {
@@ -384,41 +439,8 @@ export default function EventManagePage({ params }: { params: { eventId: string 
 
               setEvent(eventObj)
 
-              // Fetch ticket requests from Supabase
-              const { data: requestsData, error: requestsError } = await supabase
-                .from("requests")
-                .select(`
-                  *,
-                  user:users!requests_user_id_fkey (
-                    wallet_address,
-                    created_at,
-                    email
-                  )
-                `)
-                .eq("event_id", params.eventId)
-                .order("requested_at", { ascending: false })
-
-              if (requestsError) {
-                console.error("Error fetching requests:", requestsError)
-                // Continue without requests data
-              } else {
-                // Transform the data to match our Request type
-                const transformedRequests: Request[] =
-                  requestsData?.map((request: any) => ({
-                    request_id: request.request_id,
-                    wallet_address: request.wallet_address,
-                    request_status: request.request_status,
-                    requested_at: request.requested_at,
-                    reviewed_at: request.reviewed_at,
-                    admin_notes: request.admin_notes,
-                    asset_id: request.asset_id,
-                    user: request.user,
-                    user_id: request.user_id,
-                  })) || []
-
-                setRequests(transformedRequests)
-                console.log("Fetched requests:", transformedRequests)
-              }
+              // Fetch registered users from the event app
+              await fetchRegisteredUsers(Number(eventConfig.EventAppID))
 
               break
             }
@@ -442,227 +464,260 @@ export default function EventManagePage({ params }: { params: { eventId: string 
     fetchData()
   }, [params.eventId, activeAddress])
 
-  const handleSelectAll = () => {
-    if (selectedRequests.length === filteredRequests.length) {
-      setSelectedRequests([])
-    } else {
-      setSelectedRequests(filteredRequests.map((r) => r.request_id))
-    }
-  }
-
-  const handleSelectRequest = (requestId: number) => {
-    if (selectedRequests.includes(requestId)) {
-      setSelectedRequests(selectedRequests.filter((id) => id !== requestId))
-    } else {
-      setSelectedRequests([...selectedRequests, requestId])
-    }
-  }
-
-  const updateRequestStatus = async (
-    requestId: number,
-    status: "pending" | "approved" | "rejected",
-    notes?: string,
-  ) => {
+  // Function to fetch registered users from the event app
+  const fetchRegisteredUsers = async (appId: number) => {
     try {
-      const { error } = await supabase
-        .from("requests")
-        .update({
-          request_status: status,
-          reviewed_at: new Date().toISOString(),
-          admin_notes: notes || null,
-        })
-        .eq("request_id", requestId)
+      console.log("Fetching registered users for app ID:", appId)
 
-      if (error) throw error
+      // Initialize Algorand Indexer
+      const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
 
-      // Update local state
-      setRequests(
-        requests.map((request) =>
-          request.request_id === requestId
-            ? {
-                ...request,
-                request_status: status,
-                reviewed_at: new Date().toISOString(),
-                admin_notes: notes || null,
-              }
-            : request,
-        ),
-      )
+      // Get all boxes for the event application
+      const boxesResp = await indexer.searchForApplicationBoxes(appId).do()
+      console.log("Event app boxes response:", boxesResp)
 
-      toast.success(`Request ${status === "approved" ? "approved" : "rejected"} successfully`)
+      if (!boxesResp.boxes || boxesResp.boxes.length === 0) {
+        console.log("No registered users found for this event.")
+        setRegisteredUsers([])
+        return
+      }
+
+      const users: RegisteredUser[] = []
+
+      // Process each box to extract registered user information
+      for (const box of boxesResp.boxes) {
+        try {
+          // Decode box name (should be the user's address)
+          const nameBuf =
+            typeof box.name === "string"
+              ? Buffer.from(box.name, "base64")
+              : Buffer.from(
+                  (box.name as Uint8Array).buffer,
+                  (box.name as Uint8Array).byteOffset,
+                  (box.name as Uint8Array).byteLength,
+                )
+
+          // Check if the box name is 32 bytes (public key length)
+          if (nameBuf.length === 32) {
+            // Convert the public key to an Algorand address
+            const walletAddress = algosdk.encodeAddress(new Uint8Array(nameBuf))
+
+            // Fetch box value (should contain the email)
+            const valResp = await indexer
+              .lookupApplicationBoxByIDandName(
+                appId,
+                new Uint8Array(nameBuf.buffer, nameBuf.byteOffset, nameBuf.byteLength),
+              )
+              .do()
+
+            // Normalize to Buffer
+            let valueBuf: Buffer
+            if (typeof valResp.value === "string") {
+              valueBuf = Buffer.from(valResp.value, "base64")
+            } else {
+              const u8 = valResp.value as Uint8Array
+              valueBuf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
+            }
+
+            // Decode the email using ABI string type
+            const stringAbiType = algosdk.ABIType.from("string")
+            let email = ""
+
+            try {
+              email = stringAbiType.decode(valueBuf)
+              console.log(`Decoded email for ${walletAddress}: ${email}`)
+            } catch (decodeError) {
+              console.error("Error decoding box value:", decodeError)
+              // Fallback to simple toString if ABI decoding fails
+              email = valueBuf.toString()
+            }
+
+            // Add user to the list
+            users.push({
+              walletAddress,
+              email,
+              registrationTime: new Date().toISOString(), // We don't have this info, using current time as placeholder
+            })
+          }
+        } catch (boxError) {
+          console.error("Error processing user box:", boxError)
+        }
+      }
+
+      console.log("Registered users:", users)
+      setRegisteredUsers(users)
     } catch (error) {
-      console.error("Error updating request:", error)
-      toast.error("Failed to update request status")
+      console.error("Error fetching registered users:", error)
+      toast.error("Failed to fetch registered users")
     }
   }
 
-  const handleBulkAction = async (action: "approve" | "reject") => {
-    if (!activeAddress || !algodClient || !transactionSigner || !event) {
-      toast.error("Please connect your wallet first")
+  const handleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([])
+    } else {
+      setSelectedUsers(filteredUsers.map((u) => u.walletAddress))
+    }
+  }
+
+  const handleSelectUser = (walletAddress: string) => {
+    if (selectedUsers.includes(walletAddress)) {
+      setSelectedUsers(selectedUsers.filter((addr) => addr !== walletAddress))
+    } else {
+      setSelectedUsers([...selectedUsers, walletAddress])
+    }
+  }
+
+  // Function to apply template to email content
+  const applyTemplate = (templateName: string) => {
+    const template = emailTemplates.find((t) => t.name === templateName)
+    if (!template || !event) return
+
+    // Replace placeholders with actual event data
+    const subject = template.subject.replace("{{event_name}}", event.event_name)
+
+    const content = template.content
+      .replace(/{{event_name}}/g, event.event_name)
+      .replace(/{{event_date}}/g, format(new Date(event.event_date), "MMMM d, yyyy 'at' h:mm a"))
+      .replace(/{{event_location}}/g, event.location)
+
+    setEmailDialog({
+      ...emailDialog,
+      subject,
+      content,
+    })
+  }
+
+  // Function to send emails to selected users
+  const sendEmails = async () => {
+    if (selectedUsers.length === 0) {
+      toast.error("No users selected")
       return
     }
 
-    if (selectedRequests.length === 0) {
-      toast.error("No requests selected")
+    if (!emailDialog.subject.trim() || !emailDialog.content.trim()) {
+      toast.error("Subject and content are required")
       return
     }
 
     setIsProcessingBulkAction(true)
 
     try {
-      const suggestedParams = await algodClient.getTransactionParams().do()
+      const selectedUserDetails = registeredUsers.filter(
+        (user) => selectedUsers.includes(user.walletAddress) && user.email,
+      )
 
-      if (action === "approve") {
-        const transactions: algosdk.Transaction[] = []
-
-        const selectedRequestsDetails = requests.filter((request) => selectedRequests.includes(request.request_id))
-
-        // Create asset transfer transactions for each approved request
-        for (const request of selectedRequestsDetails) {
-          console.log(
-            "Request ID:",
-            request.request_id,
-            "Asset ID:",
-            request.asset_id,
-            "Wallet Address:",
-            request.wallet_address,
-          )
-
-          const xferTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-            sender: activeAddress,
-            receiver: request.wallet_address,
-            suggestedParams,
-            assetIndex: request.asset_id,
-            amount: 1,
-          })
-          transactions.push(xferTxn)
-
-          // Send confirmation email if user has email
-          if (request.user?.email) {
-            try {
-              const response = await fetch("/api/resend", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  email: request.user.email,
-                  audienceId: "57a5c553-2ff2-48a1-b9f5-dff4b5c04da9",
-                  event,
-                  ticketDetails: {
-                    assetId: request.asset_id,
-                    userAddress: request.wallet_address,
-                    eventId: event.event_id,
-                  },
-                }),
-              })
-
-              if (!response.ok) {
-                console.error("Failed to send confirmation email:", await response.text())
-              } else {
-                console.log(`Confirmation email sent to ${request.user.email}`)
-              }
-            } catch (emailError) {
-              console.error(`Error sending confirmation email to ${request.user.email}:`, emailError)
-              // Continue with other emails even if one fails
-            }
-          }
-        }
-
-        console.log("transactions:", transactions)
-
-        if (transactions.length > 0) {
-          // Sign all transactions
-          const signedTxns = await transactionSigner(
-            transactions,
-            transactions.map((_, i) => i),
-          )
-          console.log("signedTxns:", signedTxns)
-
-          // Send transactions in chunks
-          const signedAssetTransactions = sliceIntoChunks(signedTxns, 1)
-          for (let i = 0; i < signedAssetTransactions.length; i++) {
-            try {
-              const { txid } = await algodClient.sendRawTransaction(signedAssetTransactions[i]).do()
-              const result = await algosdk.waitForConfirmation(algodClient, txid, 4)
-              console.log(result)
-
-              if (i % 5 === 0 || i === signedAssetTransactions.length - 1) {
-                toast.success(`Transaction ${i + 1} of ${signedAssetTransactions.length} confirmed!`, {
-                  autoClose: 1000,
-                })
-              }
-            } catch (err) {
-              console.error(err)
-              toast.error(`Transaction ${i + 1} of ${signedAssetTransactions.length} failed!`, {
-                autoClose: 1000,
-              })
-            }
-
-            await new Promise((resolve) => setTimeout(resolve, 20))
-          }
-        }
+      if (selectedUserDetails.length === 0) {
+        toast.error("None of the selected users have email addresses")
+        setIsProcessingBulkAction(false)
+        return
       }
 
-      // Update request status in database
-      const { error } = await supabase
-        .from("requests")
-        .update({
-          request_status: action === "approve" ? "approved" : "rejected",
-          reviewed_at: new Date().toISOString(),
+      // Send emails in batches to avoid overwhelming the API
+      const batchSize = 10
+      const batches = []
+
+      for (let i = 0; i < selectedUserDetails.length; i += batchSize) {
+        batches.push(selectedUserDetails.slice(i, i + batchSize))
+      }
+
+      let successCount = 0
+      let failCount = 0
+
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i]
+        const promises = batch.map(async (user) => {
+          try {
+            const response = await fetch("/api/resend", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: user.email,
+                audienceId: "57a5c553-2ff2-48a1-b9f5-dff4b5c04da9", // Your audience ID
+                subject: emailDialog.subject,
+                htmlContent: emailDialog.content,
+                event: event,
+              }),
+            })
+
+            if (!response.ok) {
+              console.error(`Failed to send email to ${user.email}:`, await response.text())
+              return false
+            }
+
+            return true
+          } catch (error) {
+            console.error(`Error sending email to ${user.email}:`, error)
+            return false
+          }
         })
-        .in("request_id", selectedRequests)
 
-      if (error) throw error
+        const results = await Promise.all(promises)
+        successCount += results.filter(Boolean).length
+        failCount += results.filter((r) => !r).length
 
-      // Update local state
-      setRequests(
-        requests.map((request) =>
-          selectedRequests.includes(request.request_id)
-            ? {
-                ...request,
-                request_status: action === "approve" ? "approved" : "rejected",
-                reviewed_at: new Date().toISOString(),
-              }
-            : request,
-        ),
-      )
+        // Show progress toast every batch
+        toast.info(`Sending emails: ${i * batchSize + results.length}/${selectedUserDetails.length}`, {
+          autoClose: 1000,
+        })
+      }
+
+      // Show final results
+      if (successCount > 0) {
+        toast.success(`Successfully sent ${successCount} emails`)
+      }
+
+      if (failCount > 0) {
+        toast.error(`Failed to send ${failCount} emails`)
+      }
+
+      // Close the dialog
+      setEmailDialog({
+        isOpen: false,
+        subject: "",
+        content: "",
+        previewMode: false,
+      })
 
       // Clear selection
-      setSelectedRequests([])
-      toast.success(
-        `${selectedRequests.length} requests ${action === "approve" ? "approved" : "rejected"} successfully`,
-      )
+      setSelectedUsers([])
     } catch (error) {
-      console.error("Error performing bulk action:", error)
-      toast.error(`Failed to ${action} requests: ${error instanceof Error ? error.message : String(error)}`)
+      console.error("Error sending emails:", error)
+      toast.error(`Failed to send emails: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setIsProcessingBulkAction(false)
     }
   }
 
-  // Filter requests based on search query and status filter
-  const filteredRequests = requests.filter((request) => {
-    const matchesSearch = request.wallet_address.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = filterStatus === "all" || request.request_status === filterStatus
+  // Filter users based on search query and status filter
+  const filteredUsers = registeredUsers.filter((user) => {
+    const matchesSearch =
+      user.walletAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesStatus =
+      filterStatus === "all" || (filterStatus === "email" && user.email) || (filterStatus === "no-email" && !user.email)
+
     return matchesSearch && matchesStatus
   })
 
-  const renderRequestsTable = () => {
+  const renderUsersTable = () => {
     if (isLoading) {
       return (
         <div className="text-center py-12">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Loading requests...</p>
+          <p className="text-gray-400">Loading registered users...</p>
         </div>
       )
     }
 
-    if (filteredRequests.length === 0) {
+    if (filteredUsers.length === 0) {
       return (
         <div className="text-center py-12">
           <Users className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-          <h3 className="text-lg font-medium mb-2">No Requests Found</h3>
+          <h3 className="text-lg font-medium mb-2">No Registered Users Found</h3>
           <p className="text-gray-400 mb-4">
             {searchQuery || filterStatus !== "all"
               ? "Try adjusting your search or filters"
@@ -685,7 +740,7 @@ export default function EventManagePage({ params }: { params: { eventId: string 
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-12">
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleSelectAll}>
-                  {selectedRequests.length === filteredRequests.length ? (
+                  {selectedUsers.length === filteredUsers.length ? (
                     <CheckSquare className="h-4 w-4" />
                   ) : (
                     <Square className="h-4 w-4" />
@@ -693,52 +748,40 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                 </Button>
               </TableHead>
               <TableHead>Wallet Address</TableHead>
-              <TableHead>Asset ID</TableHead>
-              <TableHead>Requested</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Admin Notes</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Registration Time</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredRequests.map((request) => (
-              <TableRow key={request.request_id} className="hover:bg-gray-800/50">
+            {filteredUsers.map((user) => (
+              <TableRow key={user.walletAddress} className="hover:bg-gray-800/50">
                 <TableCell>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6"
-                    onClick={() => handleSelectRequest(request.request_id)}
+                    onClick={() => handleSelectUser(user.walletAddress)}
                   >
-                    {selectedRequests.includes(request.request_id) ? (
+                    {selectedUsers.includes(user.walletAddress) ? (
                       <CheckSquare className="h-4 w-4" />
                     ) : (
                       <Square className="h-4 w-4" />
                     )}
                   </Button>
                 </TableCell>
-                <TableCell className="font-mono">{request.wallet_address}</TableCell>
-                <TableCell>{request.asset_id}</TableCell>
-                <TableCell>{format(new Date(request.requested_at), "MMM d, yyyy HH:mm")}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      request.request_status === "approved"
-                        ? "success"
-                        : request.request_status === "rejected"
-                          ? "destructive"
-                          : "default"
-                    }
-                  >
-                    {request.request_status.charAt(0).toUpperCase() + request.request_status.slice(1)}
-                  </Badge>
+                <TableCell className="font-mono">
+                  {user.walletAddress.substring(0, 8)}...{user.walletAddress.substring(user.walletAddress.length - 8)}
                 </TableCell>
                 <TableCell>
-                  {request.admin_notes ? (
-                    <span className="text-sm text-gray-400">{request.admin_notes}</span>
+                  {user.email ? (
+                    <span className="text-sm">{user.email}</span>
                   ) : (
-                    <span className="text-sm text-gray-500">No notes</span>
+                    <span className="text-sm text-gray-500">No email</span>
                   )}
+                </TableCell>
+                <TableCell>
+                  {user.registrationTime ? format(new Date(user.registrationTime), "MMM d, yyyy HH:mm") : "Unknown"}
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -748,32 +791,40 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
+                      {user.email && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUsers([user.walletAddress])
+                            setEmailDialog({
+                              isOpen: true,
+                              subject: "",
+                              content: "",
+                              previewMode: false,
+                            })
+                          }}
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          Send Email
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
-                        onClick={() =>
-                          setAdminNotesDialog({
-                            isOpen: true,
-                            requestId: request.request_id,
-                            notes: request.admin_notes || "",
-                          })
-                        }
+                        onClick={() => {
+                          navigator.clipboard.writeText(user.walletAddress)
+                          toast.success("Wallet address copied to clipboard")
+                        }}
                       >
-                        Add Notes
+                        Copy Wallet Address
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-green-500"
-                        onClick={() => updateRequestStatus(request.request_id, "approved")}
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        Approve Request
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-red-500"
-                        onClick={() => updateRequestStatus(request.request_id, "rejected")}
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Reject Request
-                      </DropdownMenuItem>
+                      {user.email && (
+                        <DropdownMenuItem
+                          onClick={() => {
+                            navigator.clipboard.writeText(user.email)
+                            toast.success("Email address copied to clipboard")
+                          }}
+                        >
+                          Copy Email
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -871,11 +922,11 @@ export default function EventManagePage({ params }: { params: { eventId: string 
             <Card className="bg-gray-800/50 border-gray-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <Badge variant="outline">{requests.filter((r) => r.request_status === "approved").length}</Badge>
+                  <Mail className="h-5 w-5 text-green-500" />
+                  <Badge variant="outline">{registeredUsers.filter((u) => u.email).length}</Badge>
                 </div>
-                <h3 className="font-medium">Approved</h3>
-                <p className="text-sm text-gray-400">Approved requests</p>
+                <h3 className="font-medium">With Email</h3>
+                <p className="text-sm text-gray-400">Users with email</p>
               </CardContent>
             </Card>
             <Card className="bg-gray-800/50 border-gray-700">
@@ -990,9 +1041,35 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                           <QrCode className="w-4 h-4 mr-2" />
                           Generate QR Code
                         </Button>
-                        <Button className="w-full justify-start" variant="outline">
+                        <Button
+                          className="w-full justify-start"
+                          variant="outline"
+                          onClick={() => {
+                            // Create CSV content
+                            const csvContent = [
+                              ["Wallet Address", "Email", "Registration Time"],
+                              ...registeredUsers.map((user) => [
+                                user.walletAddress,
+                                user.email || "N/A",
+                                user.registrationTime || "Unknown",
+                              ]),
+                            ]
+                              .map((row) => row.join(","))
+                              .join("\n")
+
+                            // Create download link
+                            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+                            const url = URL.createObjectURL(blob)
+                            const link = document.createElement("a")
+                            link.setAttribute("href", url)
+                            link.setAttribute("download", `${event.event_name.replace(/\s+/g, "_")}_attendees.csv`)
+                            document.body.appendChild(link)
+                            link.click()
+                            document.body.removeChild(link)
+                          }}
+                        >
                           <Download className="w-4 h-4 mr-2" />
-                          Export Guest List
+                          Export Attendee List
                         </Button>
                       </CardContent>
                     </Card>
@@ -1014,16 +1091,12 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <p className="text-sm text-gray-400">Pending</p>
-                              <p className="text-2xl font-semibold">
-                                {requests.filter((r) => r.request_status === "pending").length}
-                              </p>
+                              <p className="text-sm text-gray-400">With Email</p>
+                              <p className="text-2xl font-semibold">{registeredUsers.filter((u) => u.email).length}</p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-400">Approved</p>
-                              <p className="text-2xl font-semibold">
-                                {requests.filter((r) => r.request_status === "approved").length}
-                              </p>
+                              <p className="text-sm text-gray-400">Without Email</p>
+                              <p className="text-2xl font-semibold">{registeredUsers.filter((u) => !u.email).length}</p>
                             </div>
                           </div>
                         </div>
@@ -1063,13 +1136,13 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                     <CardHeader>
                       <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
                         <div>
-                          <CardTitle>Attendee Management</CardTitle>
-                          <CardDescription>Review and manage ticket requests</CardDescription>
+                          <CardTitle>Registered Attendees</CardTitle>
+                          <CardDescription>View and manage event attendees</CardDescription>
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row">
                           <div className="flex gap-2">
                             <Input
-                              placeholder="Search by wallet..."
+                              placeholder="Search attendees..."
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                               className="w-[200px] bg-gray-900/50"
@@ -1081,48 +1154,46 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setFilterStatus("all")}>All Requests</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setFilterStatus("pending")}>
-                                  Pending Only
+                                <DropdownMenuItem onClick={() => setFilterStatus("all")}>
+                                  All Attendees
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setFilterStatus("approved")}>
-                                  Approved Only
+                                <DropdownMenuItem onClick={() => setFilterStatus("email")}>
+                                  With Email Only
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setFilterStatus("rejected")}>
-                                  Rejected Only
+                                <DropdownMenuItem onClick={() => setFilterStatus("no-email")}>
+                                  Without Email
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                          {selectedRequests.length > 0 && (
+                          {selectedUsers.length > 0 && (
                             <div className="flex items-center gap-2">
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleBulkAction("approve")}
-                                className="text-green-500"
+                                onClick={() => {
+                                  // Check if selected users have emails
+                                  const usersWithEmail = registeredUsers.filter(
+                                    (user) => selectedUsers.includes(user.walletAddress) && user.email,
+                                  )
+
+                                  if (usersWithEmail.length === 0) {
+                                    toast.error("None of the selected users have email addresses")
+                                    return
+                                  }
+
+                                  setEmailDialog({
+                                    isOpen: true,
+                                    subject: "",
+                                    content: "",
+                                    previewMode: false,
+                                  })
+                                }}
+                                className="text-primary"
                                 disabled={isProcessingBulkAction}
                               >
-                                {isProcessingBulkAction ? (
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                  <Check className="w-4 h-4 mr-2" />
-                                )}
-                                Approve Selected
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleBulkAction("reject")}
-                                className="text-red-500"
-                                disabled={isProcessingBulkAction}
-                              >
-                                {isProcessingBulkAction ? (
-                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                  <X className="w-4 h-4 mr-2" />
-                                )}
-                                Reject Selected
+                                <Mail className="w-4 h-4 mr-2" />
+                                Email Selected ({selectedUsers.length})
                               </Button>
                             </div>
                           )}
@@ -1130,7 +1201,7 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <ScrollArea className="rounded-md">{renderRequestsTable()}</ScrollArea>
+                      <ScrollArea className="rounded-md">{renderUsersTable()}</ScrollArea>
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -1140,39 +1211,131 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                     <Card className="bg-gray-800/50 border-gray-700">
                       <CardHeader>
                         <CardTitle>Send Message</CardTitle>
-                        <CardDescription>
-                          Communicate with your attendees via email or push notifications.
-                        </CardDescription>
+                        <CardDescription>Communicate with your attendees via email</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <Input placeholder="Message subject..." className="bg-gray-900/50" />
-                        <textarea
-                          placeholder="Type your message here..."
-                          className="w-full h-32 px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-                        />
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="outline">
-                            <Bell className="w-4 h-4 mr-2" />
-                            Send Push
-                          </Button>
-                          <Button>
-                            <Mail className="w-4 h-4 mr-2" />
-                            Send Email
-                          </Button>
+                        <div className="space-y-2">
+                          <Label>Select Recipients</Label>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const usersWithEmail = registeredUsers.filter((user) => user.email)
+                                if (usersWithEmail.length === 0) {
+                                  toast.error("No users have email addresses")
+                                  return
+                                }
+                                setSelectedUsers(usersWithEmail.map((u) => u.walletAddress))
+                              }}
+                            >
+                              All Users with Email ({registeredUsers.filter((u) => u.email).length})
+                            </Button>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
 
-                    <Card className="bg-gray-800/50 border-gray-700">
-                      <CardHeader>
-                        <CardTitle>Message History</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center py-8">
-                          <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-                          <h3 className="text-lg font-medium mb-2">No Messages Sent</h3>
-                          <p className="text-gray-400">Messages you send to your attendees will appear here.</p>
+                        <div className="space-y-2">
+                          <Label>Email Template</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {emailTemplates.map((template) => (
+                              <Button
+                                key={template.name}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => applyTemplate(template.name)}
+                              >
+                                {template.name}
+                              </Button>
+                            ))}
+                          </div>
                         </div>
+
+                        <div className="space-y-2">
+                          <Label>Subject</Label>
+                          <Input
+                            placeholder="Email subject..."
+                            className="bg-gray-900/50"
+                            value={emailDialog.subject}
+                            onChange={(e) => setEmailDialog({ ...emailDialog, subject: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Content (HTML)</Label>
+                          <Textarea
+                            placeholder="Type your message here... HTML is supported"
+                            className="min-h-[200px] bg-gray-900/50 font-mono text-sm"
+                            value={emailDialog.content}
+                            onChange={(e) => setEmailDialog({ ...emailDialog, content: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setEmailDialog({
+                                ...emailDialog,
+                                previewMode: !emailDialog.previewMode,
+                              })
+                            }}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            {emailDialog.previewMode ? "Hide Preview" : "Preview"}
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              if (selectedUsers.length === 0) {
+                                toast.error("No recipients selected")
+                                return
+                              }
+
+                              if (!emailDialog.subject || !emailDialog.content) {
+                                toast.error("Subject and content are required")
+                                return
+                              }
+
+                              // Check if selected users have emails
+                              const usersWithEmail = registeredUsers.filter(
+                                (user) => selectedUsers.includes(user.walletAddress) && user.email,
+                              )
+
+                              if (usersWithEmail.length === 0) {
+                                toast.error("None of the selected users have email addresses")
+                                return
+                              }
+
+                              sendEmails()
+                            }}
+                            disabled={isProcessingBulkAction}
+                          >
+                            {isProcessingBulkAction ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="w-4 h-4 mr-2" />
+                                Send Email
+                              </>
+                            )}
+                          </Button>
+                        </div>
+
+                        {emailDialog.previewMode && (
+                          <div className="mt-6 border border-gray-700 rounded-md p-4">
+                            <h3 className="text-lg font-medium mb-2">Email Preview</h3>
+                            <div className="bg-white text-black rounded-md p-4">
+                              <div className="mb-4">
+                                <strong>Subject:</strong> {emailDialog.subject}
+                              </div>
+                              <div className="border-t border-gray-200 pt-4">
+                                <div dangerouslySetInnerHTML={{ __html: emailDialog.content }} />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
@@ -1275,9 +1438,35 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                     <QrCode className="w-4 h-4 mr-2" />
                     Check-in QR Code
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      // Create CSV content
+                      const csvContent = [
+                        ["Wallet Address", "Email", "Registration Time"],
+                        ...registeredUsers.map((user) => [
+                          user.walletAddress,
+                          user.email || "N/A",
+                          user.registrationTime || "Unknown",
+                        ]),
+                      ]
+                        .map((row) => row.join(","))
+                        .join("\n")
+
+                      // Create download link
+                      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+                      const url = URL.createObjectURL(blob)
+                      const link = document.createElement("a")
+                      link.setAttribute("href", url)
+                      link.setAttribute("download", `${event.event_name.replace(/\s+/g, "_")}_attendees.csv`)
+                      document.body.appendChild(link)
+                      link.click()
+                      document.body.removeChild(link)
+                    }}
+                  >
                     <Download className="w-4 h-4 mr-2" />
-                    Download Guest List
+                    Download Attendee List
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <Settings className="w-4 h-4 mr-2" />
@@ -1314,46 +1503,114 @@ export default function EventManagePage({ params }: { params: { eventId: string 
         </div>
       </div>
 
-      {/* Admin Notes Dialog */}
+      {/* Email Composition Dialog */}
       <Dialog
-        open={adminNotesDialog.isOpen}
-        onOpenChange={(isOpen) => setAdminNotesDialog({ isOpen, requestId: null, notes: "" })}
+        open={emailDialog.isOpen}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setEmailDialog({
+              isOpen: false,
+              subject: "",
+              content: "",
+              previewMode: false,
+            })
+          }
+        }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Add Admin Notes</DialogTitle>
+            <DialogTitle>Compose Email</DialogTitle>
             <DialogDescription>
-              Add notes about this ticket request. These notes are only visible to admins.
+              Send an email to {selectedUsers.length} selected attendee{selectedUsers.length !== 1 ? "s" : ""}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <Textarea
-              placeholder="Enter admin notes..."
-              value={adminNotesDialog.notes}
-              onChange={(e) => setAdminNotesDialog({ ...adminNotesDialog, notes: e.target.value })}
-              className="min-h-[100px]"
-            />
+            <div className="space-y-2">
+              <Label>Email Template</Label>
+              <div className="flex flex-wrap gap-2">
+                {emailTemplates.map((template) => (
+                  <Button key={template.name} variant="outline" size="sm" onClick={() => applyTemplate(template.name)}>
+                    {template.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <Input
+                placeholder="Email subject..."
+                className="bg-gray-900/50"
+                value={emailDialog.subject}
+                onChange={(e) => setEmailDialog({ ...emailDialog, subject: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Content (HTML)</Label>
+              <Textarea
+                placeholder="Type your message here... HTML is supported"
+                className="min-h-[200px] bg-gray-900/50 font-mono text-sm"
+                value={emailDialog.content}
+                onChange={(e) => setEmailDialog({ ...emailDialog, content: e.target.value })}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEmailDialog({
+                    ...emailDialog,
+                    previewMode: !emailDialog.previewMode,
+                  })
+                }}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                {emailDialog.previewMode ? "Hide Preview" : "Preview"}
+              </Button>
+            </div>
+
+            {emailDialog.previewMode && (
+              <div className="mt-4 border border-gray-700 rounded-md p-4">
+                <h3 className="text-lg font-medium mb-2">Email Preview</h3>
+                <div className="bg-white text-black rounded-md p-4">
+                  <div className="mb-4">
+                    <strong>Subject:</strong> {emailDialog.subject}
+                  </div>
+                  <div className="border-t border-gray-200 pt-4">
+                    <div dangerouslySetInnerHTML={{ __html: emailDialog.content }} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setAdminNotesDialog({ isOpen: false, requestId: null, notes: "" })}
+              onClick={() => {
+                setEmailDialog({
+                  isOpen: false,
+                  subject: "",
+                  content: "",
+                  previewMode: false,
+                })
+              }}
             >
               Cancel
             </Button>
-            <Button
-              onClick={() => {
-                if (adminNotesDialog.requestId) {
-                  updateRequestStatus(
-                    adminNotesDialog.requestId,
-                    requests.find((r) => r.request_id === adminNotesDialog.requestId)?.request_status || "pending",
-                    adminNotesDialog.notes,
-                  )
-                  setAdminNotesDialog({ isOpen: false, requestId: null, notes: "" })
-                }
-              }}
-            >
-              Save Notes
+            <Button onClick={sendEmails} disabled={isProcessingBulkAction}>
+              {isProcessingBulkAction ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send Email
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
