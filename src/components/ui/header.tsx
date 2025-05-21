@@ -40,7 +40,7 @@ export function SiteHeader() {
         <div className="flex items-center">
           <Link href="/" className="flex items-center">
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-J8HZiRoosb17PVntKSD0AqIkva2z5E.png"
+              src="logo.png"
               alt="Algorand Events Logo"
               className="h-12 w-auto mr-[-5]"
             />
