@@ -16,7 +16,7 @@ import { createClient } from "@supabase/supabase-js"
 import { TicketManagerClient } from "@/contracts/TicketManagerClient"
 import { AlgorandClient } from "@algorandfoundation/algokit-utils/types/algorand-client"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { TicketFactory,TicketClient } from "@/contracts/TicketClient"
+import { TicketFactory, TicketClient } from "@/contracts/TicketClient"
 import { OnApplicationComplete } from "algosdk"
 import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount"
 // import { AlgoAmount } from "@algorandfoundation/algokit-utils"
@@ -74,6 +74,7 @@ export default function CreateEventPage() {
   const [mapOpen, setMapOpen] = useState(false)
   const [searchValue, setSearchValue] = useState("")
   const [currentStep, setCurrentStep] = useState(1)
+  const [time, setTime] = useState<string>("12:00")
 
   const handleImageUpload = async (file: File) => {
     try {
@@ -151,8 +152,11 @@ export default function CreateEventPage() {
       // Generate a unique event ID (could be timestamp-based or random)
       const eventId = Date.now()
 
-      // Calculate start and end times based on the selected date
-      const startTime = Math.floor(date.getTime() / 1000)
+      // Calculate start and end times based on the selected date and time
+      const [hours, minutes] = time.split(":").map(Number)
+      const eventDate = new Date(date!)
+      eventDate.setHours(hours, minutes, 0, 0)
+      const startTime = Math.floor(eventDate.getTime() / 1000)
       const endTime = startTime + 24 * 60 * 60 // 24 hours later
 
       // Format the IPFS URL
@@ -188,7 +192,14 @@ export default function CreateEventPage() {
         sender: activeAddress,
         signer: transactionSigner,
         onComplete: OnApplicationComplete.NoOpOC,
-        args: [formData.name, formData.location, BigInt(startTime), BigInt(endTime), BigInt(eventCost),BigInt(maxParticipants)],
+        args: [
+          formData.name,
+          formData.location,
+          BigInt(startTime),
+          BigInt(endTime),
+          BigInt(eventCost),
+          BigInt(maxParticipants),
+        ],
       })
 
       // Get application reference
@@ -197,46 +208,49 @@ export default function CreateEventPage() {
 
       toast.info(`Application created with ID: ${appID}`, { autoClose: 2000 })
 
-const client = algorand.client.getTypedAppClientById(TicketManagerClient, {
-  appId: BigInt(739825314),
-  defaultSender: activeAddress,
-  defaultSigner: transactionSigner
-});
-const client2 = algorand.client.getTypedAppClientById(TicketClient, {
-  appId: BigInt(appID),
-  defaultSender: activeAddress,
-  defaultSigner: transactionSigner
-});
+      const client = algorand.client.getTypedAppClientById(TicketManagerClient, {
+        appId: BigInt(739825314),
+        defaultSender: activeAddress,
+        defaultSigner: transactionSigner,
+      })
+      const client2 = algorand.client.getTypedAppClientById(TicketClient, {
+        appId: BigInt(appID),
+        defaultSender: activeAddress,
+        defaultSigner: transactionSigner,
+      })
       await algorand
-  .newGroup()
-  .addAppCallMethodCall(await client.params.createEvent({args: {eventConfig : {
-    eventId: BigInt(eventId),
-    eventAppId: BigInt(appID), // Using the newly created appId
-    eventCategory: formData.eventMetadata.category,
-    eventImage: ipfsURL,
-    eventCost: BigInt(eventCost),
-    maxParticipants: BigInt(maxParticipants),
-    startTime: BigInt(startTime),
-    endTime: BigInt(endTime),
-    eventCreator: activeAddress,
-    eventName: formData.name,
-    location: formData.location,
-    registeredCount: BigInt(0),
-  },
-
-} 
-
- }
-
-))
-  .addPayment({
-    sender: activeAddress,
-    receiver: appAddress,
-    amount: AlgoAmount.Algo(3),
-    signer: transactionSigner,
-  }).addAppCallMethodCall(await client2.params.createTickets({args: {assetUrl: ipfsURL, totalTickets:BigInt(maxParticipants)}}))
-.send({populateAppCallResources: true });     
- toast.success("Event created successfully on the blockchain!")
+        .newGroup()
+        .addAppCallMethodCall(
+          await client.params.createEvent({
+            args: {
+              eventConfig: {
+                eventId: BigInt(eventId),
+                eventAppId: BigInt(appID), // Using the newly created appId
+                eventCategory: formData.eventMetadata.category,
+                eventImage: ipfsURL,
+                eventCost: BigInt(eventCost),
+                maxParticipants: BigInt(maxParticipants),
+                startTime: BigInt(startTime),
+                endTime: BigInt(endTime),
+                eventCreator: activeAddress,
+                eventName: formData.name,
+                location: formData.location,
+                registeredCount: BigInt(0),
+              },
+            },
+          }),
+        )
+        .addPayment({
+          sender: activeAddress,
+          receiver: appAddress,
+          amount: AlgoAmount.Algo(3),
+          signer: transactionSigner,
+        })
+        .addAppCallMethodCall(
+          await client2.params.createTickets({ args: { assetUrl: ipfsURL, totalTickets: BigInt(maxParticipants) } }),
+        )
+        .send({ populateAppCallResources: true })
+      toast.success("Event created successfully on the blockchain!")
 
       // Redirect to the events page or show success message
       // router.push('/events')
@@ -437,14 +451,26 @@ const client2 = algorand.client.getTypedAppClientById(TicketClient, {
                         <CalendarIcon className="h-5 w-5 mr-3 text-purple-500" />
                         <span className="text-lg">
                           {date
-                            ? date.toLocaleDateString("en-US", {
+                            ? `${date.toLocaleDateString("en-US", {
                                 weekday: "long",
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              })
+                              })}`
                             : "No date selected"}
                         </span>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-gray-400 mb-2 block">Event Time</Label>
+                      <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4 flex items-center">
+                        <Clock className="h-5 w-5 mr-3 text-purple-500" />
+                        <Input
+                          type="time"
+                          value={time}
+                          onChange={(e) => setTime(e.target.value)}
+                          className="bg-transparent border-0 text-lg focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+                        />
                       </div>
                     </div>
 
@@ -580,15 +606,15 @@ const client2 = algorand.client.getTypedAppClientById(TicketClient, {
                     <div className="flex items-start">
                       <CalendarIcon className="h-5 w-5 mr-3 text-purple-500 mt-1" />
                       <div>
-                        <h4 className="text-sm text-gray-400">Date</h4>
+                        <h4 className="text-sm text-gray-400">Date & Time</h4>
                         <p className="font-medium">
                           {date
-                            ? date.toLocaleDateString("en-US", {
+                            ? `${date.toLocaleDateString("en-US", {
                                 weekday: "long",
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              })
+                              })} at ${time}`
                             : "Not specified"}
                         </p>
                       </div>
