@@ -24,8 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "react-toastify"
-import algosdk, { ABIType } from "algosdk"
-import { type QRPayload, generateQRCodeDataURL, signPayload } from "@/lib/qr-utils"
+import algosdk from "algosdk"
 import { UserDetailsDialog } from "@/components/user-details-dialog"
 
 // Define the EventConfig type with the new EventCost field
@@ -490,8 +489,6 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
 
                     console.log("Decoded email using ABI:", valResp.value)
 
-                    
-
                     users.push({
                       address: addr,
                       email: email,
@@ -587,20 +584,20 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
             eventName: event.event_name,
           }
 
-          // Make sure we have the signing key
-          const signingKey = process.env.NEXT_PUBLIC_TICKET_SIGNING_KEY
-          if (!signingKey) {
-            console.error("Missing NEXT_PUBLIC_TICKET_SIGNING_KEY environment variable")
-            throw new Error("Missing ticket signing key")
+          // Call the server API to generate the QR code
+          const response = await fetch("/api/generate-qr", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ticketData }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`Failed to generate QR code: ${response.statusText}`)
           }
 
-          const signature = await signPayload(ticketData, signingKey)
-          const qrPayload: QRPayload = {
-            payload: ticketData,
-            signature,
-          }
-
-          const qrDataUrl = await generateQRCodeDataURL(JSON.stringify(qrPayload))
+          const { qrDataUrl } = await response.json()
           console.log("QR code generated successfully:", qrDataUrl ? "success" : "failed")
 
           if (!qrDataUrl) {
@@ -732,8 +729,8 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
               "registerEvent",
             )
             .getSelector(),
-            new algosdk.ABIStringType().encode(details.email)
-                  ],
+          new algosdk.ABIStringType().encode(details.email),
+        ],
         suggestedParams: { ...suggestedParams },
         boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAddress).publicKey }],
         foreignAssets: [assetId], // Use the asset ID
