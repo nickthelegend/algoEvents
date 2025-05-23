@@ -1435,8 +1435,10 @@ export default function EventManagePage({ params }: { params: { eventId: string 
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <Button variant="outline" className="w-full justify-start">
-                    <QrCode className="w-4 h-4 mr-2" />
-                    Check-in QR Code
+                  <Link href={`/event/manage/${params.eventId}/checkin?appId=${event.app_id}`}>
+  <QrCode className="w-4 h-4 mr-2" />
+  Check-in QR Code
+</Link>
                   </Button>
                   <Button
                     variant="outline"
