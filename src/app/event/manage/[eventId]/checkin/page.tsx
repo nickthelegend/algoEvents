@@ -25,11 +25,19 @@ import algosdk from "algosdk"
 
 // Types
 interface QRPayload {
-  eventId: string | number
-  userAddress: string
-  eventName: string
-  timestamp: number
+  payload?: {
+    assetId?: number
+    userAddress: string
+    eventId: string | number
+    eventName: string
+    timestamp: string | number
+  }
   signature?: string
+  // Keep the old structure for backward compatibility
+  eventId?: string | number
+  userAddress?: string
+  eventName?: string
+  timestamp?: number | string
 }
 
 interface ScanResult {
@@ -236,7 +244,7 @@ export default function CheckinPage() {
         }
 
         // Validate QR code structure
-        if (!qrData.userAddress) {
+        if (!qrData.userAddress && !qrData.payload?.userAddress) {
           setScanResult({
             status: "error",
             message: "Invalid ticket QR code. Missing wallet address.",
@@ -273,8 +281,9 @@ export default function CheckinPage() {
       }
 
       // Check if the user is in our registered users list
+      const userAddress = qrData.payload?.userAddress || qrData.userAddress
       const registeredUser = registeredUsers.find(
-        (user) => user.walletAddress.toLowerCase() === qrData.userAddress.toLowerCase(),
+        (user) => user.walletAddress.toLowerCase() === userAddress.toLowerCase(),
       )
 
       if (registeredUser) {
@@ -295,11 +304,12 @@ export default function CheckinPage() {
           // Ignore audio errors
         }
 
-        toast.success(`Check-in successful for ${qrData.userAddress.substring(0, 8)}...`)
+        toast.success(`Check-in successful for ${userAddress.substring(0, 8)}...`)
       } else {
         // If not in our list, try to check directly from blockchain
         const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-        const userPublicKey = algosdk.decodeAddress(qrData.userAddress).publicKey
+        const userAddress = qrData.payload?.userAddress || qrData.userAddress
+        const userPublicKey = algosdk.decodeAddress(userAddress).publicKey
 
         try {
           const boxResp = await indexer.lookupApplicationBoxByIDandName(Number(appId), userPublicKey).do()
@@ -311,7 +321,7 @@ export default function CheckinPage() {
               message: "✅ Valid ticket! User is registered for this event.",
               data: qrData,
             })
-            toast.success(`Check-in successful for ${qrData.userAddress.substring(0, 8)}...`)
+            toast.success(`Check-in successful for ${userAddress.substring(0, 8)}...`)
           } else {
             setScanResult({
               status: "error",
@@ -567,8 +577,10 @@ export default function CheckinPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-400">Wallet Address:</span>
                         <span className="font-mono text-xs">
-                          {scanResult.data.userAddress.substring(0, 8)}...
-                          {scanResult.data.userAddress.substring(scanResult.data.userAddress.length - 8)}
+                          {(scanResult.data.payload?.userAddress || scanResult.data.userAddress).substring(0, 8)}...
+                          {(scanResult.data.payload?.userAddress || scanResult.data.userAddress).substring(
+                            (scanResult.data.payload?.userAddress || scanResult.data.userAddress).length - 8,
+                          )}
                         </span>
                       </div>
                       {scanResult.data.timestamp && (
@@ -590,7 +602,9 @@ export default function CheckinPage() {
                           <span className="text-gray-400">Email:</span>
                           <span>
                             {registeredUsers.find(
-                              (u) => u.walletAddress.toLowerCase() === scanResult.data?.userAddress.toLowerCase(),
+                              (u) =>
+                                u.walletAddress.toLowerCase() ===
+                                (scanResult.data?.payload?.userAddress || scanResult.data?.userAddress).toLowerCase(),
                             )?.email || "No email provided"}
                           </span>
                         </div>
