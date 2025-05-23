@@ -33,6 +33,31 @@ export async function signPayload(payload: TicketData, privateKey: string): Prom
   return hashHex
 }
 
+// Function to verify the signature using the same SHA-256 approach
+export async function verifySignature(payload: any, signature: string, publicKey: string): Promise<boolean> {
+  try {
+    // Convert the payload to a string (same as signing)
+    const payloadString = JSON.stringify(payload)
+
+    // Convert the string to a Uint8Array
+    const encoder = new TextEncoder()
+    const data = encoder.encode(payloadString)
+
+    // Create a hash of the data using SHA-256 (same as signing)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+
+    // Convert the hash to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const computedHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+
+    // Compare the computed hash with the provided signature
+    return computedHash === signature
+  } catch (error) {
+    console.error("Error verifying signature:", error)
+    return false
+  }
+}
+
 // Function to generate QR code as data URL
 export async function generateQRCodeDataURL(data: string): Promise<string> {
   try {
@@ -53,4 +78,3 @@ export async function generateQRCodeDataURL(data: string): Promise<string> {
     throw new Error("Failed to generate QR code")
   }
 }
-

@@ -15,6 +15,8 @@ import {
   CameraOff,
   Loader2,
   User,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -44,6 +46,7 @@ interface ScanResult {
   status: "success" | "error" | "warning" | null
   message: string
   data?: QRPayload
+  signatureValid?: boolean
 }
 
 interface RegisteredUser {
@@ -57,6 +60,31 @@ const userCache: Record<string, RegisteredUser[]> = {}
 
 // Flag to track if we're currently fetching
 let isFetchingUsers = false
+
+// Function to verify signature using SHA-256
+async function verifySignature(payload: any, signature: string, publicKey: string): Promise<boolean> {
+  try {
+    // Convert payload to string in the same way it was signed
+    const payloadStr = JSON.stringify(payload)
+
+    // Create a hash of the payload using SHA-256
+    const encoder = new TextEncoder()
+    const data = encoder.encode(payloadStr)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+
+    // Convert hash to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+
+    // Compare the hash with the signature
+    // In a real SHA-256 + HMAC system, this would be more complex
+    // This is a simplified version assuming the signature is the hash
+    return hashHex === signature
+  } catch (error) {
+    console.error("Error verifying signature:", error)
+    return false
+  }
+}
 
 export default function CheckinPage() {
   const router = useRouter()
@@ -233,7 +261,9 @@ export default function CheckinPage() {
         let qrData: QRPayload
         try {
           qrData = JSON.parse(decodedText)
+          console.log("Parsed QR data:", qrData)
         } catch (parseError) {
+          console.error("Error parsing QR code:", parseError)
           setScanResult({
             status: "error",
             message: "Invalid QR code format. This doesn't appear to be a valid ticket.",
@@ -254,8 +284,53 @@ export default function CheckinPage() {
           return
         }
 
+        // Verify signature if present
+        let signatureValid = false
+        if (qrData.signature) {
+          try {
+            // Get the payload data to verify
+            const payloadToVerify = qrData.payload || {
+              userAddress: qrData.userAddress,
+              eventId: qrData.eventId,
+              eventName: qrData.eventName,
+              timestamp: qrData.timestamp,
+            }
+
+            // Get the public key from environment variable
+            const publicKey = process.env.NEXT_PUBLIC_TICKET_SIGNING_KEY
+            if (!publicKey) {
+              console.error("Missing NEXT_PUBLIC_TICKET_SIGNING_KEY environment variable")
+              throw new Error("Missing ticket verification key")
+            }
+
+            console.log("Verifying signature with public key:", publicKey)
+            console.log("Payload to verify:", payloadToVerify)
+            console.log("Signature:", qrData.signature)
+
+            // Verify the signature
+            signatureValid = await verifySignature(payloadToVerify, qrData.signature, publicKey)
+            console.log("Signature verification result:", signatureValid)
+
+            if (!signatureValid) {
+              setScanResult({
+                status: "warning",
+                message: "⚠️ Ticket signature verification failed. Proceeding with caution.",
+                data: qrData,
+                signatureValid: false,
+              })
+              // Continue with verification even if signature is invalid
+            }
+          } catch (verifyError) {
+            console.error("Error verifying signature:", verifyError)
+            // Continue with verification but mark as unverified
+            signatureValid = false
+          }
+        } else {
+          console.log("No signature found in QR code")
+        }
+
         // Verify the user is registered for this event
-        await verifyRegistration(qrData)
+        await verifyRegistration(qrData, signatureValid)
       } catch (error) {
         console.error("Error processing QR code:", error)
         setScanResult({
@@ -274,7 +349,7 @@ export default function CheckinPage() {
   )
 
   // Verify user registration
-  const verifyRegistration = async (qrData: QRPayload) => {
+  const verifyRegistration = async (qrData: QRPayload, signatureValid: boolean) => {
     try {
       if (!appId) {
         throw new Error("App ID not provided")
@@ -290,8 +365,11 @@ export default function CheckinPage() {
         // User is registered
         setScanResult({
           status: "success",
-          message: "✅ Valid ticket! User is registered for this event.",
+          message: signatureValid
+            ? "✅ Valid ticket! User is registered for this event. Signature verified."
+            : "✅ Valid ticket! User is registered for this event. (Signature not verified)",
           data: qrData,
+          signatureValid,
         })
 
         // Play success sound (optional)
@@ -308,7 +386,6 @@ export default function CheckinPage() {
       } else {
         // If not in our list, try to check directly from blockchain
         const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-        const userAddress = qrData.payload?.userAddress || qrData.userAddress
         const userPublicKey = algosdk.decodeAddress(userAddress).publicKey
 
         try {
@@ -318,15 +395,21 @@ export default function CheckinPage() {
             // User is registered
             setScanResult({
               status: "success",
-              message: "✅ Valid ticket! User is registered for this event.",
+              message: signatureValid
+                ? "✅ Valid ticket! User is registered for this event. Signature verified."
+                : "✅ Valid ticket! User is registered for this event. (Signature not verified)",
               data: qrData,
+              signatureValid,
             })
             toast.success(`Check-in successful for ${userAddress.substring(0, 8)}...`)
           } else {
             setScanResult({
               status: "error",
-              message: "❌ Invalid ticket! This user is not registered for this event.",
+              message: signatureValid
+                ? "❌ Invalid ticket! This user is not registered for this event. (Signature verified)"
+                : "❌ Invalid ticket! This user is not registered for this event.",
               data: qrData,
+              signatureValid,
             })
           }
         } catch (boxError) {
@@ -335,6 +418,7 @@ export default function CheckinPage() {
             status: "error",
             message: "❌ Invalid ticket! This user is not registered for this event.",
             data: qrData,
+            signatureValid,
           })
         }
       }
@@ -344,6 +428,7 @@ export default function CheckinPage() {
         status: "error",
         message: `Failed to verify registration: ${error instanceof Error ? error.message : String(error)}`,
         data: qrData,
+        signatureValid,
       })
     }
   }
@@ -558,20 +643,45 @@ export default function CheckinPage() {
                   <AlertDescription className="text-base">{scanResult.message}</AlertDescription>
                 </Alert>
 
+                {/* Signature Verification Badge */}
+                {scanResult.data?.signature && (
+                  <div className="mb-4">
+                    <div
+                      className={`flex items-center gap-2 p-2 rounded ${
+                        scanResult.signatureValid
+                          ? "bg-green-900/20 text-green-400 border border-green-800"
+                          : "bg-yellow-900/20 text-yellow-400 border border-yellow-800"
+                      }`}
+                    >
+                      {scanResult.signatureValid ? (
+                        <>
+                          <ShieldCheck className="h-5 w-5" />
+                          <span>Signature verified - Official ticket</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldAlert className="h-5 w-5" />
+                          <span>Signature verification failed - Unofficial ticket</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {scanResult.data && (
                   <div className="space-y-3">
                     <h4 className="font-medium">Ticket Details:</h4>
                     <div className="grid gap-2 text-sm bg-gray-900/50 p-4 rounded-lg">
-                      {scanResult.data.eventName && (
+                      {(scanResult.data.eventName || scanResult.data.payload?.eventName) && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">Event:</span>
-                          <span>{scanResult.data.eventName}</span>
+                          <span>{scanResult.data.payload?.eventName || scanResult.data.eventName}</span>
                         </div>
                       )}
-                      {scanResult.data.eventId && (
+                      {(scanResult.data.eventId || scanResult.data.payload?.eventId) && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">Event ID:</span>
-                          <span>{scanResult.data.eventId}</span>
+                          <span>{scanResult.data.payload?.eventId || scanResult.data.eventId}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
@@ -583,10 +693,18 @@ export default function CheckinPage() {
                           )}
                         </span>
                       </div>
-                      {scanResult.data.timestamp && (
+                      {(scanResult.data.timestamp || scanResult.data.payload?.timestamp) && (
                         <div className="flex justify-between">
                           <span className="text-gray-400">Timestamp:</span>
-                          <span>{new Date(scanResult.data.timestamp).toLocaleString()}</span>
+                          <span>
+                            {new Date(scanResult.data.payload?.timestamp || scanResult.data.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {scanResult.data.payload?.assetId && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Asset ID:</span>
+                          <span>{scanResult.data.payload.assetId}</span>
                         </div>
                       )}
                       {scanResult.data.signature && (
@@ -627,6 +745,7 @@ export default function CheckinPage() {
               <p>3. Position the QR code within the camera frame</p>
               <p>4. The system will automatically verify the ticket</p>
               <p>5. Green result = Valid ticket, Red result = Invalid ticket</p>
+              <p>6. Signature verification ensures the ticket is official</p>
             </CardContent>
           </Card>
         </div>

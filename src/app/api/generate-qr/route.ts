@@ -1,45 +1,54 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { type QRPayload, generateQRCodeDataURL, signPayload } from "@/lib/qr-utils"
+import { signPayload, generateQRCodeDataURL, type QRPayload } from "@/lib/qr-utils"
 
 export async function POST(request: NextRequest) {
   try {
-    const { ticketData } = await request.json()
-
-    if (!ticketData) {
-      return NextResponse.json({ error: "Missing ticket data" }, { status: 400 })
-    }
+    const body = await request.json()
+    const { assetId, userAddress, eventId, eventName } = body
 
     // Validate required fields
-    if (!ticketData.assetId || !ticketData.userAddress || !ticketData.eventId) {
-      return NextResponse.json({ error: "Missing required ticket data fields" }, { status: 400 })
+    if (!assetId || !userAddress || !eventId || !eventName) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Get the private signing key from server environment
-    const signingKey = process.env.TICKET_SIGNING_PRIVATE_KEY
-    if (!signingKey) {
+    // Get the private signing key from environment variable
+    const privateKey = process.env.TICKET_SIGNING_PRIVATE_KEY
+    if (!privateKey) {
       console.error("Missing TICKET_SIGNING_PRIVATE_KEY environment variable")
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
     }
 
-    // Sign the payload using the private key
-    const signature = await signPayload(ticketData, signingKey)
+    // Create the ticket data
+    const ticketData = {
+      assetId: Number(assetId),
+      userAddress,
+      eventId,
+      timestamp: new Date().toISOString(),
+      eventName,
+    }
 
-    // Create the QR payload with the nested structure
+    // Sign the payload using SHA-256
+    const signature = await signPayload(ticketData, privateKey)
+
+    // Create the QR payload
     const qrPayload: QRPayload = {
       payload: ticketData,
       signature,
     }
 
-    // Generate the QR code data URL
+    // Generate the QR code
     const qrDataUrl = await generateQRCodeDataURL(JSON.stringify(qrPayload))
 
-    if (!qrDataUrl) {
-      return NextResponse.json({ error: "Failed to generate QR code" }, { status: 500 })
-    }
-
-    return NextResponse.json({ qrDataUrl })
+    return NextResponse.json({
+      success: true,
+      qrCode: qrDataUrl,
+      payload: qrPayload,
+    })
   } catch (error) {
     console.error("Error generating QR code:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { error: `Failed to generate QR code: ${error instanceof Error ? error.message : String(error)}` },
+      { status: 500 },
+    )
   }
 }

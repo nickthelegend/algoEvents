@@ -561,9 +561,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     fetchAppData()
   }, [blockchainEvent, activeAddress])
 
-  // Update the useEffect for QR code generation to also check isUserRegistered
-  // Replace the existing QR code generation useEffect with this updated version:
-
+  // Update the useEffect for QR code generation to use the API route
   useEffect(() => {
     const generateQR = async () => {
       // Check if user is registered either through requestStatus or isUserRegistered flag
@@ -576,35 +574,33 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
             eventId: event.event_id,
           })
 
-          const ticketData = {
-            assetId: assetId,
-            userAddress: activeAddress,
-            eventId: event.event_id,
-            timestamp: new Date().toISOString(),
-            eventName: event.event_name,
-          }
-
-          // Call the server API to generate the QR code
+          // Call the API route to generate QR code
           const response = await fetch("/api/generate-qr", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ ticketData }),
+            body: JSON.stringify({
+              assetId: assetId,
+              userAddress: activeAddress,
+              eventId: event.event_id,
+              eventName: event.event_name,
+            }),
           })
 
           if (!response.ok) {
-            throw new Error(`Failed to generate QR code: ${response.statusText}`)
+            const errorData = await response.json()
+            throw new Error(errorData.error || "Failed to generate QR code")
           }
 
-          const { qrDataUrl } = await response.json()
-          console.log("QR code generated successfully:", qrDataUrl ? "success" : "failed")
+          const data = await response.json()
+          console.log("QR code generated successfully:", data.success)
 
-          if (!qrDataUrl) {
+          if (!data.qrCode) {
             throw new Error("QR code generation returned empty result")
           }
 
-          setQrCode(qrDataUrl)
+          setQrCode(data.qrCode)
         } catch (error) {
           console.error("Error generating QR code:", error)
           toast.error(`Failed to generate ticket QR code: ${error instanceof Error ? error.message : String(error)}`)
